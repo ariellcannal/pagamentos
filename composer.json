@@ -1,0 +1,14 @@
+{
+	"name" : "ariellcannal/pagamentos",
+	"type" : "project",
+	"license" : "MIT",
+	"require" : {
+		"pagarme/pagarme-php-sdk" : "~6.8"
+	},
+	"autoload" : {
+		"psr-4" : {
+			"PagamentosCannal\\" : "Interfaces/",
+			"PagamentosCannal\\Entities\\" : "Entities/"
+		}
+	}
+}
