@@ -1,26 +1,26 @@
 <?php
 namespace PagamentosCannal\Entities;
 
-class CartaoEntity
+class Cartao extends _EntityBase
 {
 
-    private string $numero;
+    protected string $numero;
 
-    private string $codigo;
+    protected string $codigo;
 
-    private int $vencimento_mes;
+    protected int $vencimento_mes;
 
-    private int $vencimento_ano;
+    protected int $vencimento_ano;
 
-    private string $nome;
+    protected string $nome;
 
-    private ?bool $salvar = true;
+    protected ?bool $salvar = true;
 
-    private ?string $id;
+    protected ?string $id;
 
-    private ?string $ultimosQuatro;
+    protected ?string $ultimosQuatro;
 
-    private ?string $bandeira;
+    protected ?string $bandeira;
 
     public function __construct()
     {

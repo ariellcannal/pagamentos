@@ -1,15 +1,11 @@
 <?php
 namespace PagamentosCannal;
 
-use PagamentosCannal\Pagamentos;
-use PagamentosCannal\Entities\CartaoEntity;
-use PagamentosCannal\Entities\PedidoEntity;
-
-use OficinasCannal\Entities\OperadorasTransacoesEntity;
-use OficinasCannal\Entities\AlunosEntity;
-use OficinasCannal\Entities\OperadorasEntity;
-use OficinasCannal\Entities\RecebiveisEntity;
-
+use PagamentosCannal\Entities\Cartao;
+use PagamentosCannal\Entities\Pedido;
+use PagamentosCannal\Entities\Cliente;
+use PagamentosCannal\Entities\Recebivel;
+use PagamentosCannal\Entities\Transacao;
 use PagarmeApiSDKLib\PagarmeApiSDKClient;
 use PagarmeApiSDKLib\PagarmeApiSDKClientBuilder;
 use PagarmeApiSDKLib\Authentication\BasicAuthCredentialsBuilder;
@@ -32,13 +28,10 @@ use PagarmeApiSDKLib\Models\Builders\CreateCardRequestBuilder;
 use PagarmeApiSDKLib\Models\Builders\CreateCardOptionsRequestBuilder;
 use PagarmeApiSDKLib\Exceptions\ErrorException;
 use PagarmeApiSDKLib\Exceptions\ApiException;
+use CannalLogs\Log;
 
-class Pagarme implements Pagamentos
+class Pagarme implements PagamentosInterface
 {
-
-    private ?OperadorasEntity $opr = null;
-
-    private ?string $key = null;
 
     private ?CreateCustomerRequest $custumer = null;
 
@@ -46,33 +39,25 @@ class Pagarme implements Pagamentos
 
     private ?PagarmeApiSDKClient $client = null;
 
-    public function __construct(OperadorasEntity $opr, bool $force_production = false)
+    public function __construct(string $key, ?string $nome = null)
     {
-        $this->setKey($opr, $force_production);
-    }
+        $this->key = $key;
 
-    public function setKey(OperadorasEntity $opr, bool $force_production = false): self
-    {
-        if ($force_production || ENVIRONMENT == 'production') {
-            $this->key = $opr->getProductionKey();
+        if ($nome) {
+            $this->nome = $nome;
         } else {
-            $this->key = $opr->getDevelopmentKey();
+            $this->nome = 'Pagarme';
         }
-        $this->opr = $opr;
-        return $this;
-    }
 
-    public function getOpr(): array
-    {
-        return $this->opr;
+        $this->log = new Log();
     }
 
     private function exception($ex)
     {
-        $ci = &get_instance();
-        $ci->logs->write('ERROR', 'PAGARME ERROR:' . PHP_EOL . $ex->getHttpResponse()->getRawBody() . PHP_EOL . $ex->getTraceAsString());
+        $this->log->write('ERROR', 'PAGARME ERROR:' . PHP_EOL . $ex->getHttpResponse()
+            ->getRawBody() . PHP_EOL . $ex->getTraceAsString());
         $text = json_decode($ex->getHttpResponse()->getRawBody())->message;
-        set_status_header($ex->getHttpResponse()->getStatusCode(),$text);
+        set_status_header($ex->getHttpResponse()->getStatusCode(), $text);
         echo $text;
         exit(1); // EXIT_ERROR
     }
@@ -89,39 +74,38 @@ class Pagarme implements Pagamentos
         }
     }
 
-    public function getCustumerAddress(AlunosEntity &$alu): CreateAddressRequest
+    public function getCustumerAddress(Cliente &$cli): CreateAddressRequest
     {
-        $ci = &get_instance();
         if (! empty($this->custumer_address) && $this->custumer_address instanceof CreateAddressRequest) {
             return $this->custumer_address;
         } else {
             try {
-                if (empty($alu->getEnderecoCidade()) || empty($alu->getEnderecoEstado())) {
+                if (empty($cli->getEnderecoCidade()) || empty($cli->getEnderecoEstado())) {
                     return false;
                 }
                 if (! $this->client) {
                     $this->getClient();
                 }
 
-                if (ENVIRONMENT == 'production' && $alu->getPagarmeId() != "") {
+                if (ENVIRONMENT == 'production' && $cli->getPagarmeId() != "") {
                     $customerController = $this->client->getCustomersController();
-                    $addresses = $customerController->getAddresses($alu->getPagarmeId());
+                    $addresses = $customerController->getAddresses($cli->getPagarmeId());
                     foreach ($addresses->getData() as $addr) {
-                        $customerController->deleteAddress($alu->getPagarmeId(), $addr->getId());
+                        $customerController->deleteAddress($cli->getPagarmeId(), $addr->getId());
                     }
                 }
 
-                $alu->setEnderecoCep(str_pad(preg_replace('/[^0-9]/', '', $alu->getEnderecoCep()), 8, '0', STR_PAD_LEFT));
+                $cli->setEnderecoCep(str_pad(preg_replace('/[^0-9]/', '', $cli->getEnderecoCep()), 8, '0', STR_PAD_LEFT));
 
-                $ci->logs->write('DEBUG', 'CREATE ADDRESS CEP: ' . $alu->getEnderecoCep());
+                $this->log->write('DEBUG', 'CREATE ADDRESS CEP: ' . $cli->getEnderecoCep());
 
-                if (empty($alu->getEnderecoComplemento())) {
-                    $alu->setEnderecoComplemento('');
+                if (empty($cli->getEnderecoComplemento())) {
+                    $cli->setEnderecoComplemento('');
                 }
 
-                $this->custumer_address = new CreateAddressRequest($alu->getEndereco(), $alu->getEnderecoNumero(), $alu->getEnderecoCep(), $alu->getEnderecoBairro(), $alu->getEnderecoCidade(), $alu->getEnderecoEstado(), 'BR', $alu->getEnderecoComplemento(), $alu->getEndereco() . ', ' . $alu->getEnderecoNumero() . ($alu->getEnderecoComplemento() != "" ? ', ' . $alu->getEnderecoComplemento() : ''), $alu->getEnderecoBairro() . ', ' . $alu->getEnderecoCidade() . '/' . $alu->getEnderecoEstado() . ' - ' . $alu->getEnderecoCep());
+                $this->custumer_address = new CreateAddressRequest($cli->getEndereco(), $cli->getEnderecoNumero(), $cli->getEnderecoCep(), $cli->getEnderecoBairro(), $cli->getEnderecoCidade(), $cli->getEnderecoEstado(), 'BR', $cli->getEnderecoComplemento(), $cli->getEndereco() . ', ' . $cli->getEnderecoNumero() . ($cli->getEnderecoComplemento() != "" ? ', ' . $cli->getEnderecoComplemento() : ''), $cli->getEnderecoBairro() . ', ' . $cli->getEnderecoCidade() . '/' . $cli->getEnderecoEstado() . ' - ' . $cli->getEnderecoCep());
 
-                $ci->logs->write('DEBUG', 'CREATE ADDRESS REQUEST:' . PHP_EOL . json_encode($this->custumer_address));
+                $this->log->write('DEBUG', 'CREATE ADDRESS REQUEST:' . PHP_EOL . json_encode($this->custumer_address));
 
                 return $this->custumer_address;
             } catch (ErrorException $e) {
@@ -132,9 +116,8 @@ class Pagarme implements Pagamentos
         }
     }
 
-    public function updateCustumer(AlunosEntity &$alu): AlunosEntity
+    public function updateCustumer(Cliente &$cli): Cliente
     {
-        $ci = &get_instance();
         if (! empty($this->custumer) && $this->custumer_address instanceof CreateCustomerRequest) {
             return $this->custumer;
         } else {
@@ -142,41 +125,41 @@ class Pagarme implements Pagamentos
                 $this->getClient();
             }
             try {
-                $alu->setCelular(preg_replace('/[^0-9]/', '', $alu->getCelular()));
-                $alu->setCpf(preg_replace('/[^0-9]/', '', $alu->getCpf()));
+                $cli->setCelular(preg_replace('/[^0-9]/', '', $cli->getCelular()));
+                $cli->setCpf(preg_replace('/[^0-9]/', '', $cli->getCpf()));
 
                 $customerController = $this->client->getCustomersController();
 
-                $phone = CreatePhonesRequestBuilder::init()->mobilePhone(CreatePhoneRequestBuilder::init()->areaCode(substr($alu->getCelular(), 0, 2))
+                $phone = CreatePhonesRequestBuilder::init()->mobilePhone(CreatePhoneRequestBuilder::init()->areaCode(substr($cli->getCelular(), 0, 2))
                     ->countryCode("55")
-                    ->number(substr($alu->getCelular(), 2, strlen($alu->getCelular()) - 2))
+                    ->number(substr($cli->getCelular(), 2, strlen($cli->getCelular()) - 2))
                     ->build())
                     ->build();
 
-                $address = $this->getCustumerAddress($alu);
+                $address = $this->getCustumerAddress($cli);
 
-                $this->custumer = CreateCustomerRequestBuilder::init($alu->getNome(), $alu->getEmail(), $alu->getCpf(), 'individual', $address, [
-                    'alu_id' => $alu->getId()
-                ], $phone, $alu->getId())->build();
-                if (ENVIRONMENT == 'production' && $alu->getPagarmeId()) {
-                    $result = $customerController->updateCustomer($alu->getPagarmeId(), UpdateCustomerRequestBuilder::init()->name($alu->getNome())
-                        ->email($alu->getEmail())
-                        ->document($alu->getCpf())
+                $this->custumer = CreateCustomerRequestBuilder::init($cli->getNome(), $cli->getEmail(), $cli->getCpf(), 'individual', $address, [
+                    'alu_id' => $cli->getId()
+                ], $phone, $cli->getId())->build();
+                if (ENVIRONMENT == 'production' && $cli->getPagarmeId()) {
+                    $result = $customerController->updateCustomer($cli->getPagarmeId(), UpdateCustomerRequestBuilder::init()->name($cli->getNome())
+                        ->email($cli->getEmail())
+                        ->document($cli->getCpf())
                         ->type('individual')
                         ->address($address)
                         ->metadata([
-                        'alu_id' => $alu->getId()
+                        'alu_id' => $cli->getId()
                     ])
                         ->phones($phone)
-                        ->code($alu->getId())
+                        ->code($cli->getId())
                         ->build());
-                    $ci->logs->write('DEBUG', 'UPDATE CUSTUMER REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
+                    $this->log->write('DEBUG', 'UPDATE CUSTUMER REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
                 } else {
                     $result = $customerController->createCustomer($this->custumer);
-                    $alu->setPagarmeId($result->getId());
-                    $ci->logs->write('DEBUG', 'CREATE CUSTUMER REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
+                    $cli->setPagarmeId($result->getId());
+                    $this->log->write('DEBUG', 'CREATE CUSTUMER REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
                 }
-                return $alu;
+                return $cli;
             } catch (ErrorException $e) {
                 $this->exception($e);
             } catch (ApiException $e) {
@@ -185,9 +168,8 @@ class Pagarme implements Pagamentos
         }
     }
 
-    public function saveCard(AlunosEntity &$alu, CartaoEntity $cartao): CartaoEntity
+    public function saveCard(Cliente &$cli, Cartao $cartao): Cartao
     {
-        $ci = &get_instance();
         try {
             if (! $this->client) {
                 $this->getClient();
@@ -201,17 +183,17 @@ class Pagarme implements Pagamentos
                 ->expMonth($cartao->getVencimentoMes())
                 ->expYear($cartao->getVencimentoAno())
                 ->cvv($cartao->getCodigo())
-                ->billingAddress($this->getCustumerAddress($alu))
+                ->billingAddress($this->getCustumerAddress($cli))
                 ->metadata([
-                'alu_id' => $alu->getId()
+                'alu_id' => $cli->getId()
             ])
                 ->privateLabel(false)
                 ->options(CreateCardOptionsRequestBuilder::init(true))
                 ->build();
 
-            $result = $customersController->createCard($this->updateCustumer($alu)
+            $result = $customersController->createCard($this->updateCustumer($cli)
                 ->getPagarmeId(), $card);
-            $ci->logs->write('DEBUG', 'SAVE CARD REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
+            $this->log->write('DEBUG', 'SAVE CARD REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
 
             $cartao->setId($result->getId());
             return $cartao;
@@ -222,7 +204,7 @@ class Pagarme implements Pagamentos
         }
     }
 
-    public function getCards(AlunosEntity &$alu): array
+    public function getCards(Cliente &$cli): array
     {
         try {
             if (! $this->client) {
@@ -230,10 +212,10 @@ class Pagarme implements Pagamentos
             }
 
             $customerController = $this->client->getCustomersController();
-            $result = $customerController->getCards($alu->getPagarmeId());
+            $result = $customerController->getCards($cli->getPagarmeId());
             $retorno = [];
             foreach ($result->getData() as $card) {
-                $cartao = new CartaoEntity();
+                $cartao = new Cartao();
                 $retorno[] = $cartao->setId($card->getId())
                     ->setVencimentoMes($card->getExpMonth())
                     ->setVencimentoAno($card->getExpYear())
@@ -248,9 +230,8 @@ class Pagarme implements Pagamentos
         }
     }
 
-    public function creditCard(AlunosEntity &$alu, PedidoEntity $pedido, CartaoEntity|string $cartao): OperadorasTransacoesEntity
+    public function creditCard(Cliente &$cli, Pedido $pedido, Cartao|string $cartao): Transacao
     {
-        $ci = &get_instance();
         try {
             if (! $this->client) {
                 $this->getClient();
@@ -258,21 +239,21 @@ class Pagarme implements Pagamentos
 
             $ordersController = $this->client->getOrdersController();
 
-            $this->updateCustumer($alu);
+            $this->updateCustumer($cli);
 
             $pedido->setValor(number_format($pedido->getValor(), 2, '', ''));
 
             $creditCard = new CreateCreditCardPaymentRequest();
-            if ($cartao instanceof CartaoEntity) {
+            if ($cartao instanceof Cartao) {
                 $card = new CreateCardRequest();
                 $card->setNumber(preg_replace('/[^0-9]/', '', $cartao->getNumero()));
                 $card->setHolderName($cartao->getNome());
                 $card->setExpMonth($cartao->getVencimentoMes());
                 $card->setExpYear($cartao->getVencimentoAno());
                 $card->setCvv($cartao->getCodigo());
-                $card->setBillingAddress($this->getCustumerAddress($alu));
+                $card->setBillingAddress($this->getCustumerAddress($cli));
                 $card->setMetadata([
-                    'alu_id' => $alu->getId()
+                    'alu_id' => $cli->getId()
                 ]);
                 $card->setOptions(new CreateCardOptionsRequest(true));
                 $card->setPrivateLabel(false);
@@ -280,9 +261,9 @@ class Pagarme implements Pagamentos
 
                 $creditCard->setCard($card);
 
-                if (ENVIRONMENT == 'production' && $cartao->getSalvar() && $alu->getPagarmeId()) {
+                if (ENVIRONMENT == 'production' && $cartao->getSalvar() && $cli->getPagarmeId()) {
                     $customerController = $this->client->getCustomersController();
-                    $customerController->createCard($alu->getPagarmeId(), $card);
+                    $customerController->createCard($cli->getPagarmeId(), $card);
                 }
             } else {
                 $customerController = $this->client->getCustomersController();
@@ -310,12 +291,12 @@ class Pagarme implements Pagamentos
                 CreatePaymentRequestBuilder::init('credit_card')->creditCard($creditCard)->build()
             ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
 
-            $ci->logs->write('DEBUG', 'CARTAO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $this->log->write('DEBUG', 'CARTAO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
             $order = $ordersController->createOrder($body);
-            $ci->logs->write('DEBUG', 'CARTAO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+            $this->log->write('DEBUG', 'CARTAO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
 
             $charge = $order->getCharges()[0];
-            $transacao = new OperadorasTransacoesEntity();
+            $transacao = new Transacao();
             if ($charge->getLastTransaction()->getCard()) {
                 $transacao->setCartao($charge->getLastTransaction()
                     ->getCard()
@@ -379,16 +360,15 @@ class Pagarme implements Pagamentos
         }
     }
 
-    public function pix(AlunosEntity &$alu, PedidoEntity $pedido): OperadorasTransacoesEntity
+    public function pix(Cliente &$cli, Pedido $pedido): Transacao
     {
-        $ci = &get_instance();
         try {
             if (! $this->client) {
                 $this->getClient();
             }
             $ordersController = $this->client->getOrdersController();
 
-            $this->updateCustumer($alu);
+            $this->updateCustumer($cli);
 
             $pix = new CreatePixPaymentRequest();
             $pix->setExpiresAt(new \DateTime('+1 day'));
@@ -400,13 +380,13 @@ class Pagarme implements Pagamentos
                 CreatePaymentRequestBuilder::init('pix')->pix($pix)->build()
             ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
 
-            $ci->logs->write('DEBUG', 'PIX REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $this->log->write('DEBUG', 'PIX REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
             $order = $ordersController->createOrder($body);
-            $ci->logs->write('DEBUG', 'PIX RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+            $this->log->write('DEBUG', 'PIX RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
 
             $charge = $order->getCharges()[0];
 
-            $transacao = new OperadorasTransacoesEntity();
+            $transacao = new Transacao();
             $transacao->setTipo('pix')
                 ->setOperadoraID($order->getCharges()[0]->getId())
                 ->setPixQrCode($charge->getLastTransaction()
@@ -449,9 +429,8 @@ class Pagarme implements Pagamentos
         }
     }
 
-    public function refund(string $charge_id, int $amount): OperadorasTransacoesEntity
+    public function refund(string $charge_id, int $amount): Transacao
     {
-        $ci = &get_instance();
         try {
             if (! $this->client) {
                 $this->getClient();
@@ -467,13 +446,13 @@ class Pagarme implements Pagamentos
             $request = new CreateCancelChargeRequest("");
             $request->setAmount($amount * 100);
 
-            $ci->logs->write('DEBUG', 'ESTORNO REQUEST:' . PHP_EOL . json_encode($request->jsonSerialize()));
+            $this->log->write('DEBUG', 'ESTORNO REQUEST:' . PHP_EOL . json_encode($request->jsonSerialize()));
             $charge = $chargeController->cancelCharge($charge_id, $request);
-            $ci->logs->write('DEBUG', 'ESTORNO RESPONSE:' . PHP_EOL . json_encode($charge->jsonSerialize()));
+            $this->log->write('DEBUG', 'ESTORNO RESPONSE:' . PHP_EOL . json_encode($charge->jsonSerialize()));
 
             return $this->fillTransacao($charge);
 
-            $transacao = new OperadorasTransacoesEntity();
+            $transacao = new Transacao();
 
             $transacao->setDataCancelamento($charge->getCanceledAt()
                 ->format('Y-m-d H:i:s'))
@@ -491,10 +470,10 @@ class Pagarme implements Pagamentos
         }
     }
 
-    private function fillTransacao(GetChargeResponse $charge, ?OperadorasTransacoesEntity $transacao = null): OperadorasTransacoesEntity
+    private function fillTransacao(GetChargeResponse $charge, ?Transacao $transacao = null): Transacao
     {
         if (! $transacao) {
-            $transacao = new OperadorasTransacoesEntity();
+            $transacao = new Transacao();
         }
 
         $erros = [];
@@ -535,7 +514,7 @@ class Pagarme implements Pagamentos
             ->setOperadoraStatus($charge->getStatus());
     }
 
-    public function getCharge(string $charge_id): ?OperadorasTransacoesEntity
+    public function getCharge(string $charge_id): ?Transacao
     {
         try {
             if (! $this->client) {
@@ -546,7 +525,7 @@ class Pagarme implements Pagamentos
 
             $charge = $chargeController->getCharge($charge_id);
 
-            $transacao = new OperadorasTransacoesEntity();
+            $transacao = new Transacao();
             if (in_array($charge->getStatus(), [
                 'paid',
                 'overpaid'
@@ -599,7 +578,7 @@ class Pagarme implements Pagamentos
         }
     }
 
-    public function getReceivable(int $payable_id): ?RecebiveisEntity
+    public function getReceivable(int $payable_id): ?Recebivel
     {
         try {
             if ($payable_id === 0) {
@@ -612,7 +591,7 @@ class Pagarme implements Pagamentos
 
             $payable = $payablesController->getPayableById($payable_id);
 
-            $rec = new RecebiveisEntity();
+            $rec = new Recebivel();
             $rec->setParcela($payable->getInstallment())
                 ->setOperadoraResposta(json_encode($payable))
                 ->setOperadoraId($payable->getId())
@@ -685,7 +664,7 @@ class Pagarme implements Pagamentos
                     if (isset($retorno[$key])) {
                         $rec = $retorno[$key];
                     } else {
-                        $rec = new RecebiveisEntity();
+                        $rec = new Recebivel();
                     }
                     foreach ($payables as $payable) {
                         if ($payable->getType() == 'credit') {
@@ -699,7 +678,7 @@ class Pagarme implements Pagamentos
                         } else {
                             continue;
                         }
-                        if($payable->getStatus() === 'paid'){
+                        if ($payable->getStatus() === 'paid') {
                             $rec->setRecebido(true);
                         }
 

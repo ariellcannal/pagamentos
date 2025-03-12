@@ -1,18 +1,18 @@
 <?php
 namespace PagamentosCannal\Entities;
 
-class PedidoEntity
+class Pedido extends _EntityBase
 {
 
-    private string $id;
+    protected string $id;
 
-    private string $valor;
+    protected string $valor;
 
-    private int $parcelas;
+    protected int $parcelas;
 
-    private string $descricaoFatura;
+    protected string $descricaoFatura;
 
-    private string $nomeDoItem;
+    protected string $nomeDoItem;
 
     public function __construct(string $id, string $valor, int $parcelas, string $descricaoFatura, string $nomeDoItem)
     {

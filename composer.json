@@ -3,12 +3,21 @@
 	"type" : "project",
 	"license" : "MIT",
 	"require" : {
-		"pagarme/pagarme-php-sdk" : "~6.8"
+		"pagarme/pagarme-php-sdk" : "~6.8",
+		"ariellcannal/logs" : "dev-master"
 	},
+	"repositories" : [{
+			"type" : "git",
+			"url" : "git@github.com:ariellcannal/logs.git",
+			"name" : "logs"
+		}
+	],
 	"autoload" : {
 		"psr-4" : {
 			"PagamentosCannal\\" : "Interfaces/",
 			"PagamentosCannal\\Entities\\" : "Entities/"
 		}
-	}
+	},
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
