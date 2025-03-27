@@ -6,6 +6,7 @@ use PagamentosCannal\Entities\Pedido;
 use PagamentosCannal\Entities\Cliente;
 use PagamentosCannal\Entities\Recebivel;
 use PagamentosCannal\Entities\Transacao;
+use PagamentosCannal\PagamentosInterface;
 use PagarmeApiSDKLib\PagarmeApiSDKClient;
 use PagarmeApiSDKLib\PagarmeApiSDKClientBuilder;
 use PagarmeApiSDKLib\Authentication\BasicAuthCredentialsBuilder;
