@@ -4,7 +4,7 @@
 	"license" : "MIT",
 	"require" : {
 		"pagarme/pagarme-php-sdk" : "~6.8",
-		"ariellcannal/logs" : "dev-master"
+		"ariellcannal/logs" : "master"
 	},
 	"repositories" : [{
 			"type" : "git",
