@@ -13,7 +13,7 @@ class _EntityBase
     {
         foreach ($array as $key => $value) {
             if ($prefix) {
-                str_replace($prefix, '', $key);
+                $key = str_replace($prefix, '', $key);
             }
             if (property_exists($this, $key)) {
                 $this->{$key} = $value;
