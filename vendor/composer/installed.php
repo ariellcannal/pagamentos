@@ -3,7 +3,7 @@
         'name' => 'ariellcannal/pagamentos',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'a13359a13c364ffb61c04af331895a7b9487d5f5',
+        'reference' => 'fd4dd7c10a00fcc67f7de9ec1fe84842e0ea0fba',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -49,7 +49,7 @@
         'ariellcannal/logs' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '453e6d09e08edd4955de70c9eb64c99edbf5712a',
+            'reference' => 'd287625d82e4225087b0b4515e8432b77f1db85f',
             'type' => 'project',
             'install_path' => __DIR__ . '/../ariellcannal/logs',
             'aliases' => array(
@@ -60,7 +60,7 @@
         'ariellcannal/pagamentos' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'a13359a13c364ffb61c04af331895a7b9487d5f5',
+            'reference' => 'fd4dd7c10a00fcc67f7de9ec1fe84842e0ea0fba',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
