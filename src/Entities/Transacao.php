@@ -6,13 +6,23 @@ class Transacao extends _EntityBase
 
     protected ?int $id = null;
 
+    protected ?int $inscricao = null;
+
+    protected ?string $forma = null;
+
     protected ?string $tipo = null;
+
+    protected ?string $cartao = null;
 
     protected ?int $parcelas = null;
 
     protected ?float $valorBruto = null;
 
     protected ?float $valorLiquido = null;
+
+    protected ?float $valorCancelado = null;
+
+    protected ?string $dataCancelamento = null;
 
     protected ?string $dataTransacao = null;
 
@@ -68,6 +78,50 @@ class Transacao extends _EntityBase
     public function setId(?int $id): self
     {
         $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * Get the value of inscricao
+     *
+     * @return int
+     */
+    public function getInscricao(): int
+    {
+        return $this->inscricao;
+    }
+
+    /**
+     * Set the value of inscricao
+     *
+     * @param int $id
+     * @return self
+     */
+    public function setInscricao(int $inscricao): self
+    {
+        $this->inscricao = $inscricao;
+        return $this;
+    }
+
+    /**
+     * Get the value of forma
+     *
+     * @return string|null
+     */
+    public function getForma(): ?string
+    {
+        return $this->forma;
+    }
+
+    /**
+     * Set the value of forma
+     *
+     * @param string|null $forma
+     * @return self
+     */
+    public function setForma(?string $forma): self
+    {
+        $this->forma = $forma;
         return $this;
     }
 
@@ -178,6 +232,50 @@ class Transacao extends _EntityBase
     public function setValorLiquido(?float $valorLiquido): self
     {
         $this->valorLiquido = $valorLiquido;
+        return $this;
+    }
+
+    /**
+     * Get the value of valorCancelado
+     *
+     * @return float
+     */
+    public function getValorCancelado(): ?float
+    {
+        return $this->valorCancelado;
+    }
+
+    /**
+     * Set the value of valorCancelado
+     *
+     * @param float|null $valorCancelado
+     * @return self
+     */
+    public function setValorCancelado(?float $valorCancelado): self
+    {
+        $this->valorCancelado = $valorCancelado;
+        return $this;
+    }
+
+    /**
+     * Get the value of dataCancelamento
+     *
+     * @return string|null
+     */
+    public function getDataCancelamento(): ?string
+    {
+        return $this->dataCancelamento;
+    }
+
+    /**
+     * Set the value of dataCancelamento
+     *
+     * @param string|null $dataCancelamento
+     * @return self
+     */
+    public function setDataCancelamento(?string $dataCancelamento): self
+    {
+        $this->dataCancelamento = $dataCancelamento;
         return $this;
     }
 
