@@ -31,6 +31,7 @@ use PagarmeApiSDKLib\Exceptions\ErrorException;
 use PagarmeApiSDKLib\Exceptions\ApiException;
 use CANNALLogs\Logs;
 use CANNALLogs;
+use PagarmeApiSDKLib\Models\CreatePhonesRequest;
 
 class Pagarme implements PagamentosInterface
 {
@@ -141,7 +142,7 @@ class Pagarme implements PagamentosInterface
                         ->build())
                         ->build();
                 } else {
-                    $phone = CreatePhonesRequestBuilder::init();
+                    $phone = new CreatePhonesRequest();
                 }
                 if ($cli->getCpf()) {
                     $cli->setCpf(preg_replace('/[^0-9]/', '', $cli->getCpf()));
