@@ -30,6 +30,7 @@ use PagarmeApiSDKLib\Models\Builders\CreateCardOptionsRequestBuilder;
 use PagarmeApiSDKLib\Exceptions\ErrorException;
 use PagarmeApiSDKLib\Exceptions\ApiException;
 use CANNALLogs\Logs;
+use CANNALLogs;
 
 class Pagarme implements PagamentosInterface
 {
@@ -44,7 +45,7 @@ class Pagarme implements PagamentosInterface
 
     private ?string $nome = null;
 
-    private ?string $log = null;
+    private ?CANNALLogs\Logs $log = null;
 
     public function __construct(string $key, ?string $nome = null)
     {
