@@ -1,5 +1,5 @@
 <?php
-namespace CANNALPagamentos;
+namespace CANNALPagamentos\Interfaces;
 
 use CANNALPagamentos\Entities\Cartao;
 use CANNALPagamentos\Entities\Pedido;
