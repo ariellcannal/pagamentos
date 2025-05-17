@@ -170,7 +170,7 @@ class Pagarme implements PagamentosInterface
                     $this->log->write('DEBUG', 'UPDATE CUSTUMER REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
                 } else {
                     $result = $customerController->createCustomer($this->custumer);
-                    $cli->setPagarmeId($result->getId());
+                    $cli->setIdOperadora($result->getId());
                     $this->log->write('DEBUG', 'CREATE CUSTUMER REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
                 }
                 return $cli;

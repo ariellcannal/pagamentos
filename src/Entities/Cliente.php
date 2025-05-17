@@ -6,6 +6,8 @@ class Cliente extends _EntityBase
 
     protected int $id = 0;
 
+    protected ?string $idOperadora = null;
+
     protected ?string $nome = null;
 
     protected ?string $cpf = null;
@@ -41,6 +43,23 @@ class Cliente extends _EntityBase
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    public function getIdOperadora(): string
+    {
+        return $this->idOperadora;
+    }
+
+    public function setIdOperadora(string $idOperadora): self
+    {
+        $this->idOperadora = $idOperadora;
+        return $this;
     }
 
     public function getNome(): ?string
