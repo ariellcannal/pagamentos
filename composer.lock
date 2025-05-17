@@ -159,16 +159,16 @@
         },
         {
             "name": "apimatic/unirest-php",
-            "version": "4.0.5",
+            "version": "4.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/apimatic/unirest-php.git",
-                "reference": "e16754010c16be5473289470f129d87a0f41b55e"
+                "reference": "df38c93ffa71e8a1b7a075c2322c28cdfe8fe1f5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/apimatic/unirest-php/zipball/e16754010c16be5473289470f129d87a0f41b55e",
-                "reference": "e16754010c16be5473289470f129d87a0f41b55e",
+                "url": "https://api.github.com/repos/apimatic/unirest-php/zipball/df38c93ffa71e8a1b7a075c2322c28cdfe8fe1f5",
+                "reference": "df38c93ffa71e8a1b7a075c2322c28cdfe8fe1f5",
                 "shasum": ""
             },
             "require": {
@@ -218,9 +218,9 @@
             "support": {
                 "email": "opensource@apimatic.io",
                 "issues": "https://github.com/apimatic/unirest-php/issues",
-                "source": "https://github.com/apimatic/unirest-php/tree/4.0.5"
+                "source": "https://github.com/apimatic/unirest-php/tree/4.0.6"
             },
-            "time": "2023-04-25T14:19:45+00:00"
+            "time": "2025-04-22T09:12:12+00:00"
         },
         {
             "name": "ariellcannal/logs",
@@ -228,42 +228,48 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:ariellcannal/logs.git",
-                "reference": "d287625d82e4225087b0b4515e8432b77f1db85f"
+                "reference": "03b3e01656ae3638bb9eceb7432f04dcc679470e"
             },
             "require": {
                 "php": ">=8.0.0"
             },
             "default-branch": true,
             "type": "project",
+            "autoload": {
+                "psr-4": {
+                    "CANNALLogs\\": "src/"
+                }
+            },
             "license": [
                 "MIT"
             ],
-            "description": "Cannal Produções - Logs",
-            "time": "2025-03-27T20:27:02+00:00"
+            "description": "CANNAL - Logs",
+            "time": "2025-05-17T21:57:57+00:00"
         },
         {
             "name": "pagarme/pagarme-php-sdk",
-            "version": "6.8.15",
+            "version": "6.8.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pagarme/pagarme-php-sdk.git",
-                "reference": "4b40b51a3a3e231d32a07dc3baee1b259c0f6edd"
+                "reference": "b58c1105bc2afe803bcc083b236538d723d85997"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pagarme/pagarme-php-sdk/zipball/4b40b51a3a3e231d32a07dc3baee1b259c0f6edd",
-                "reference": "4b40b51a3a3e231d32a07dc3baee1b259c0f6edd",
+                "url": "https://api.github.com/repos/pagarme/pagarme-php-sdk/zipball/b58c1105bc2afe803bcc083b236538d723d85997",
+                "reference": "b58c1105bc2afe803bcc083b236538d723d85997",
                 "shasum": ""
             },
             "require": {
-                "apimatic/core": "~0.3.11",
+                "apimatic/core": "~0.3.13",
                 "apimatic/core-interfaces": "~0.1.5",
-                "apimatic/unirest-php": "^4.0.0",
+                "apimatic/unirest-php": "^4.0.6",
+                "ext-curl": "*",
                 "ext-json": "*",
                 "php": "^7.2 || ^8.0"
             },
             "require-dev": {
-                "phan/phan": "5.4.2",
+                "phan/phan": "5.4.5",
                 "squizlabs/php_codesniffer": "^3.5"
             },
             "type": "library",
@@ -292,9 +298,9 @@
             ],
             "support": {
                 "issues": "https://github.com/pagarme/pagarme-php-sdk/issues",
-                "source": "https://github.com/pagarme/pagarme-php-sdk/tree/6.8.15"
+                "source": "https://github.com/pagarme/pagarme-php-sdk/tree/6.8.17"
             },
-            "time": "2024-11-01T13:52:44+00:00"
+            "time": "2025-05-13T13:22:34+00:00"
         },
         {
             "name": "php-jsonpointer/php-jsonpointer",

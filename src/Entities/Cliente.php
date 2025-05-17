@@ -43,7 +43,7 @@ class Cliente extends _EntityBase
         return $this->id;
     }
 
-    public function getNome(): string
+    public function getNome(): ?string
     {
         return $this->nome;
     }
@@ -76,7 +76,7 @@ class Cliente extends _EntityBase
         return $this;
     }
 
-    public function getEmail(): string
+    public function getEmail(): ?string
     {
         return $this->email;
     }
@@ -87,7 +87,7 @@ class Cliente extends _EntityBase
         return $this;
     }
 
-    public function getCelular(): string
+    public function getCelular(): ?string
     {
         return $this->celular;
     }
