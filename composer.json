@@ -18,6 +18,11 @@
 			"PagamentosCannal\\Entities\\" : "Entities/"
 		}
 	},
+	"autoload" : {
+		"psr-4" : {
+			"CANNALPagamentos\\" : "src/"
+		}
+	},
     "minimum-stability": "dev",
     "prefer-stable": true
 }
