@@ -40,7 +40,7 @@ class Transacao extends _EntityBase
 
     protected ?string $criacao = null;
 
-    public function __construct(?array $array = null, ?string $prefix)
+    public function __construct(?array $array = null, ?string $prefix = null)
     {
         if ($array) {
             $this->importArray($array, $prefix);

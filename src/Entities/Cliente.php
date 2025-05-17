@@ -30,10 +30,10 @@ class Cliente extends _EntityBase
 
     protected ?string $enderecoCep = null;
 
-    public function __construct(?array $array = null, ?string $prefix)
+    public function __construct(?array $array = null, ?string $prefix = null)
     {
         if ($array) {
-            $this->importArray($array,$prefix);
+            $this->importArray($array, $prefix);
         }
         return $this;
     }
