@@ -1,11 +1,11 @@
 <?php
-namespace PagamentosCannal;
+namespace CANNALPagamentos;
 
-use PagamentosCannal\Entities\Cliente;
-use PagamentosCannal\Entities\Pedido;
-use PagamentosCannal\Entities\Cartao;
-use PagamentosCannal\Entities\Transacao;
-use PagamentosCannal\Entities\Recebivel;
+use CANNALPagamentos\Entities\Cliente;
+use CANNALPagamentos\Entities\Pedido;
+use CANNALPagamentos\Entities\Cartao;
+use CANNALPagamentos\Entities\Transacao;
+use CANNALPagamentos\Entities\Recebivel;
 
 interface PagamentosInterface
 {

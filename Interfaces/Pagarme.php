@@ -1,12 +1,12 @@
 <?php
-namespace PagamentosCannal;
+namespace CANNALPagamentos;
 
-use PagamentosCannal\Entities\Cartao;
-use PagamentosCannal\Entities\Pedido;
-use PagamentosCannal\Entities\Cliente;
-use PagamentosCannal\Entities\Recebivel;
-use PagamentosCannal\Entities\Transacao;
-use PagamentosCannal\PagamentosInterface;
+use CANNALPagamentos\Entities\Cartao;
+use CANNALPagamentos\Entities\Pedido;
+use CANNALPagamentos\Entities\Cliente;
+use CANNALPagamentos\Entities\Recebivel;
+use CANNALPagamentos\Entities\Transacao;
+use CANNALPagamentos\PagamentosInterface;
 use PagarmeApiSDKLib\PagarmeApiSDKClient;
 use PagarmeApiSDKLib\PagarmeApiSDKClientBuilder;
 use PagarmeApiSDKLib\Authentication\BasicAuthCredentialsBuilder;
@@ -29,7 +29,7 @@ use PagarmeApiSDKLib\Models\Builders\CreateCardRequestBuilder;
 use PagarmeApiSDKLib\Models\Builders\CreateCardOptionsRequestBuilder;
 use PagarmeApiSDKLib\Exceptions\ErrorException;
 use PagarmeApiSDKLib\Exceptions\ApiException;
-use CannalLogs\Log;
+use CANNALLogs\Log;
 
 class Pagarme implements PagamentosInterface
 {

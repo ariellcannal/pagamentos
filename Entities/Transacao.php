@@ -1,5 +1,5 @@
 <?php
-namespace PagamentosCannal\Entities;
+namespace CANNALPagamentos\Entities;
 
 class Transacao extends _EntityBase
 {
