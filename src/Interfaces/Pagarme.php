@@ -40,6 +40,12 @@ class Pagarme implements PagamentosInterface
 
     private ?PagarmeApiSDKClient $client = null;
 
+    private ?string $key = null;
+
+    private ?string $nome = null;
+
+    private ?string $log = null;
+
     public function __construct(string $key, ?string $nome = null)
     {
         $this->key = $key;
