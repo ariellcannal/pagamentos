@@ -9,9 +9,12 @@ class _EntityBase
      *
      * @return array
      */
-    public function importArray(array $array): self
+    public function importArray(array $array, ?string $prefix): self
     {
         foreach ($array as $key => $value) {
+            if ($prefix) {
+                str_replace($prefix, '', $key);
+            }
             if (property_exists($this, $key)) {
                 $this->{$key} = $value;
             }

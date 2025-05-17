@@ -41,10 +41,10 @@ class Recebivel extends _EntityBase
     /**
      * Construtor da classe Recebiveis_model.
      */
-    public function __construct(?array $array = null)
+    public function __construct(?array $array = null, ?string $prefix)
     {
         if ($array) {
-            $this->importArray($array);
+            $this->importArray($array,$prefix);
         }
         return $this;
     }
