@@ -135,18 +135,19 @@ class Pagarme implements PagamentosInterface
             try {
                 if ($cli->getCelular()) {
                     $cli->setCelular(preg_replace('/[^0-9]/', '', $cli->getCelular()));
+                    $phone = CreatePhonesRequestBuilder::init()->mobilePhone(CreatePhoneRequestBuilder::init()->areaCode(substr($cli->getCelular(), 0, 2))
+                        ->countryCode("55")
+                        ->number(substr($cli->getCelular(), 2, strlen($cli->getCelular()) - 2))
+                        ->build())
+                        ->build();
+                } else {
+                    $phone = CreatePhonesRequestBuilder::init();
                 }
                 if ($cli->getCpf()) {
                     $cli->setCpf(preg_replace('/[^0-9]/', '', $cli->getCpf()));
                 }
 
                 $customerController = $this->client->getCustomersController();
-
-                $phone = CreatePhonesRequestBuilder::init()->mobilePhone(CreatePhoneRequestBuilder::init()->areaCode(substr($cli->getCelular(), 0, 2))
-                    ->countryCode("55")
-                    ->number(substr($cli->getCelular(), 2, strlen($cli->getCelular()) - 2))
-                    ->build())
-                    ->build();
 
                 $address = $this->getCustumerAddress($cli);
 
