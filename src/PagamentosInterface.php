@@ -10,12 +10,6 @@ use CANNALPagamentos\Entities\Recebivel;
 interface PagamentosInterface
 {
 
-    private ?string $key = null;
-
-    private ?string $nome = null;
-
-    private ?string $log = null;
-
     public function __construct(string $key, ?string $nome = null);
 
     public function creditCard(Cliente &$cli, Pedido $pedido, Cartao|string $cartao): Transacao;
