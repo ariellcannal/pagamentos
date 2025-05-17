@@ -82,7 +82,7 @@ class Pagarme implements PagamentosInterface
         }
     }
 
-    public function getCustumerAddress(Cliente &$cli): CreateAddressRequest
+    public function getCustumerAddress(Cliente &$cli): bool|CreateAddressRequest
     {
         if (! empty($this->custumer_address) && $this->custumer_address instanceof CreateAddressRequest) {
             return $this->custumer_address;
@@ -133,8 +133,12 @@ class Pagarme implements PagamentosInterface
                 $this->getClient();
             }
             try {
-                $cli->setCelular(preg_replace('/[^0-9]/', '', $cli->getCelular()));
-                $cli->setCpf(preg_replace('/[^0-9]/', '', $cli->getCpf()));
+                if ($cli->getCelular()) {
+                    $cli->setCelular(preg_replace('/[^0-9]/', '', $cli->getCelular()));
+                }
+                if ($cli->getCpf()) {
+                    $cli->setCpf(preg_replace('/[^0-9]/', '', $cli->getCpf()));
+                }
 
                 $customerController = $this->client->getCustomersController();
 
