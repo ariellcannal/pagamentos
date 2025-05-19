@@ -61,6 +61,11 @@ class Pagarme implements PagamentosInterface
         $this->log = new Logs();
     }
 
+    public function getNome(): ?string
+    {
+        return $this->nome;
+    }
+
     private function exception($ex)
     {
         $this->log->write('ERROR', 'PAGARME ERROR:' . PHP_EOL . $ex->getHttpResponse()
@@ -96,11 +101,11 @@ class Pagarme implements PagamentosInterface
                     $this->getClient();
                 }
 
-                if (ENVIRONMENT == 'production' && $cli->getPagarmeId() != "") {
+                if (ENVIRONMENT == 'production' && $cli->getIdOperadora() != "") {
                     $customerController = $this->client->getCustomersController();
-                    $addresses = $customerController->getAddresses($cli->getPagarmeId());
+                    $addresses = $customerController->getAddresses($cli->getIdOperadora());
                     foreach ($addresses->getData() as $addr) {
-                        $customerController->deleteAddress($cli->getPagarmeId(), $addr->getId());
+                        $customerController->deleteAddress($cli->getIdOperadora(), $addr->getId());
                     }
                 }
 
@@ -155,8 +160,8 @@ class Pagarme implements PagamentosInterface
                 $this->custumer = CreateCustomerRequestBuilder::init($cli->getNome(), $cli->getEmail(), $cli->getCpf(), 'individual', $address, [
                     'alu_id' => $cli->getId()
                 ], $phone, $cli->getId())->build();
-                if (ENVIRONMENT == 'production' && $cli->getPagarmeId()) {
-                    $result = $customerController->updateCustomer($cli->getPagarmeId(), UpdateCustomerRequestBuilder::init()->name($cli->getNome())
+                if (ENVIRONMENT == 'production' && $cli->getIdOperadora()) {
+                    $result = $customerController->updateCustomer($cli->getIdOperadora(), UpdateCustomerRequestBuilder::init()->name($cli->getNome())
                         ->email($cli->getEmail())
                         ->document($cli->getCpf())
                         ->type('individual')
@@ -206,7 +211,7 @@ class Pagarme implements PagamentosInterface
                 ->build();
 
             $result = $customersController->createCard($this->updateCustumer($cli)
-                ->getPagarmeId(), $card);
+                ->getIdOperadora(), $card);
             $this->log->write('DEBUG', 'SAVE CARD REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
 
             $cartao->setId($result->getId());
@@ -226,7 +231,7 @@ class Pagarme implements PagamentosInterface
             }
 
             $customerController = $this->client->getCustomersController();
-            $result = $customerController->getCards($cli->getPagarmeId());
+            $result = $customerController->getCards($cli->getIdOperadora());
             $retorno = [];
             foreach ($result->getData() as $card) {
                 $cartao = new Cartao();
@@ -275,16 +280,16 @@ class Pagarme implements PagamentosInterface
 
                 $creditCard->setCard($card);
 
-                if (ENVIRONMENT == 'production' && $cartao->getSalvar() && $cli->getPagarmeId()) {
+                if (ENVIRONMENT == 'production' && $cartao->getSalvar() && $cli->getIdOperadora()) {
                     $customerController = $this->client->getCustomersController();
-                    $customerController->createCard($cli->getPagarmeId(), $card);
+                    $customerController->createCard($cli->getIdOperadora(), $card);
                 }
             } else {
                 $customerController = $this->client->getCustomersController();
                 try {
                     if (ENVIRONMENT == 'production') {
-                        // $card = $customerController->getCard($alu->getPagarmeId(), $cartao);
-                        // $customerController->updateCard($alu->getPagarmeId(), $cartao, UpdateCardRequestBuilder::init($card->getHolderName(), $card->getExpMonth(), $card->getExpYear(), $this->get_custumer_address($alu), $card->getMetadata(), (is_null($card->getLabel()) ? "" : $card->getLabel()))->build());
+                        // $card = $customerController->getCard($alu->getIdOperadora(), $cartao);
+                        // $customerController->updateCard($alu->getIdOperadora(), $cartao, UpdateCardRequestBuilder::init($card->getHolderName(), $card->getExpMonth(), $card->getExpYear(), $this->get_custumer_address($alu), $card->getMetadata(), (is_null($card->getLabel()) ? "" : $card->getLabel()))->build());
                     }
                     $creditCard->setCardId($cartao);
                 } catch (ErrorException $e) {

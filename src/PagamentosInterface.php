@@ -12,6 +12,8 @@ interface PagamentosInterface
 
     public function __construct(string $key, ?string $nome = null);
 
+    public function getNome(): ?string;
+
     public function creditCard(Cliente &$cli, Pedido $pedido, Cartao|string $cartao): Transacao;
 
     public function pix(Cliente &$cli, Pedido $pedido): Transacao;
