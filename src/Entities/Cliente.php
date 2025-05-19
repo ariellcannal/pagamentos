@@ -51,7 +51,7 @@ class Cliente extends _EntityBase
         return $this;
     }
 
-    public function getIdOperadora(): string
+    public function getIdOperadora(): ?string
     {
         return $this->idOperadora;
     }
