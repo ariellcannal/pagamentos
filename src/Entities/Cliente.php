@@ -56,7 +56,7 @@ class Cliente extends _EntityBase
         return $this->idOperadora;
     }
 
-    public function setIdOperadora(string $idOperadora): self
+    public function setIdOperadora(?string $idOperadora): self
     {
         $this->idOperadora = $idOperadora;
         return $this;
