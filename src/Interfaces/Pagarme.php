@@ -58,7 +58,7 @@ class Pagarme implements PagamentosInterface
             $this->nome = 'Pagarme';
         }
 
-        $this->log = new Logs();
+        $this->log = new Logs('CANNAL Pagamentos' . DIRECTORY_SEPARATOR . 'pagarme');
     }
 
     public function getNome(): ?string
