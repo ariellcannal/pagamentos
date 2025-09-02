@@ -29,10 +29,13 @@ use PagarmeApiSDKLib\Models\Builders\CreateCardRequestBuilder;
 use PagarmeApiSDKLib\Models\Builders\CreateCardOptionsRequestBuilder;
 use PagarmeApiSDKLib\Exceptions\ErrorException;
 use PagarmeApiSDKLib\Exceptions\ApiException;
-use CANNALLogs\Logs;
-use CANNALLogs;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
 use PagarmeApiSDKLib\Models\CreatePhonesRequest;
 
+/**
+ * Classe responsável por integrar pagamentos via Pagar.me.
+ */
 class Pagarme implements PagamentosInterface
 {
 
@@ -46,8 +49,19 @@ class Pagarme implements PagamentosInterface
 
     private ?string $nome = null;
 
-    private ?CANNALLogs\Logs $log = null;
+    /**
+     * Instância do logger.
+     *
+     * @var Logger|null
+     */
+    private ?Logger $log = null;
 
+    /**
+     * Construtor da classe Pagarme.
+     *
+     * @param string $key Chave da API.
+     * @param string|null $nome Nome da operadora.
+     */
     public function __construct(string $key, ?string $nome = null)
     {
         $this->key = $key;
@@ -58,7 +72,15 @@ class Pagarme implements PagamentosInterface
             $this->nome = 'Pagarme';
         }
 
-        $this->log = new Logs('CANNAL Pagamentos' . DIRECTORY_SEPARATOR . 'pagarme');
+        // Define caminho do arquivo de log
+        $logPath = defined('WRITEPATH') ? WRITEPATH . 'logs/pagarme.log' : __DIR__ . '/../../logs/pagarme.log';
+        $logDirectory = dirname($logPath);
+        if (! is_dir($logDirectory)) {
+            mkdir($logDirectory, 0775, true);
+        }
+
+        $this->log = new Logger('CANNAL Pagamentos/pagarme');
+        $this->log->pushHandler(new StreamHandler($logPath, Logger::DEBUG));
     }
 
     public function getNome(): ?string
@@ -66,9 +88,15 @@ class Pagarme implements PagamentosInterface
         return $this->nome;
     }
 
-    private function exception($ex)
+    /**
+     * Trata exceções da API.
+     *
+     * @param mixed $ex Exceção lançada.
+     * @return void
+     */
+    private function exception($ex): void
     {
-        $this->log->write('ERROR', 'PAGARME ERROR:' . PHP_EOL . $ex->getHttpResponse()
+        $this->log->error('PAGARME ERROR:' . PHP_EOL . $ex->getHttpResponse()
             ->getRawBody() . PHP_EOL . $ex->getTraceAsString());
         $text = json_decode($ex->getHttpResponse()->getRawBody())->message;
         set_status_header($ex->getHttpResponse()->getStatusCode(), $text);
@@ -111,7 +139,7 @@ class Pagarme implements PagamentosInterface
 
                 $cli->setEnderecoCep(str_pad(preg_replace('/[^0-9]/', '', $cli->getEnderecoCep()), 8, '0', STR_PAD_LEFT));
 
-                $this->log->write('DEBUG', 'CREATE ADDRESS CEP: ' . $cli->getEnderecoCep());
+                $this->log->debug('CREATE ADDRESS CEP: ' . $cli->getEnderecoCep());
 
                 if (empty($cli->getEnderecoComplemento())) {
                     $cli->setEnderecoComplemento('');
@@ -119,7 +147,7 @@ class Pagarme implements PagamentosInterface
 
                 $this->custumer_address = new CreateAddressRequest($cli->getEndereco(), $cli->getEnderecoNumero(), $cli->getEnderecoCep(), $cli->getEnderecoBairro(), $cli->getEnderecoCidade(), $cli->getEnderecoEstado(), 'BR', $cli->getEnderecoComplemento(), $cli->getEndereco() . ', ' . $cli->getEnderecoNumero() . ($cli->getEnderecoComplemento() != "" ? ', ' . $cli->getEnderecoComplemento() : ''), $cli->getEnderecoBairro() . ', ' . $cli->getEnderecoCidade() . '/' . $cli->getEnderecoEstado() . ' - ' . $cli->getEnderecoCep());
 
-                $this->log->write('DEBUG', 'CREATE ADDRESS REQUEST:' . PHP_EOL . json_encode($this->custumer_address));
+                $this->log->debug('CREATE ADDRESS REQUEST:' . PHP_EOL . json_encode($this->custumer_address));
 
                 return $this->custumer_address;
             } catch (ErrorException $e) {
@@ -172,11 +200,11 @@ class Pagarme implements PagamentosInterface
                         ->phones($phone)
                         ->code($cli->getId())
                         ->build());
-                    $this->log->write('DEBUG', 'UPDATE CUSTUMER REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
+                    $this->log->debug('UPDATE CUSTUMER REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
                 } else {
                     $result = $customerController->createCustomer($this->custumer);
                     $cli->setIdOperadora($result->getId());
-                    $this->log->write('DEBUG', 'CREATE CUSTUMER REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
+                    $this->log->debug('CREATE CUSTUMER REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
                 }
                 return $cli;
             } catch (ErrorException $e) {
@@ -212,7 +240,7 @@ class Pagarme implements PagamentosInterface
 
             $result = $customersController->createCard($this->updateCustumer($cli)
                 ->getIdOperadora(), $card);
-            $this->log->write('DEBUG', 'SAVE CARD REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
+            $this->log->debug('SAVE CARD REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
 
             $cartao->setId($result->getId());
             return $cartao;
@@ -310,9 +338,9 @@ class Pagarme implements PagamentosInterface
                 CreatePaymentRequestBuilder::init('credit_card')->creditCard($creditCard)->build()
             ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
 
-            $this->log->write('DEBUG', 'CARTAO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $this->log->debug('CARTAO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
             $order = $ordersController->createOrder($body);
-            $this->log->write('DEBUG', 'CARTAO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+            $this->log->debug('CARTAO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
 
             $charge = $order->getCharges()[0];
             $transacao = new Transacao();
@@ -399,9 +427,9 @@ class Pagarme implements PagamentosInterface
                 CreatePaymentRequestBuilder::init('pix')->pix($pix)->build()
             ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
 
-            $this->log->write('DEBUG', 'PIX REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $this->log->debug('PIX REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
             $order = $ordersController->createOrder($body);
-            $this->log->write('DEBUG', 'PIX RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+            $this->log->debug('PIX RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
 
             $charge = $order->getCharges()[0];
 
@@ -465,9 +493,9 @@ class Pagarme implements PagamentosInterface
             $request = new CreateCancelChargeRequest("");
             $request->setAmount($amount * 100);
 
-            $this->log->write('DEBUG', 'ESTORNO REQUEST:' . PHP_EOL . json_encode($request->jsonSerialize()));
+            $this->log->debug('ESTORNO REQUEST:' . PHP_EOL . json_encode($request->jsonSerialize()));
             $charge = $chargeController->cancelCharge($charge_id, $request);
-            $this->log->write('DEBUG', 'ESTORNO RESPONSE:' . PHP_EOL . json_encode($charge->jsonSerialize()));
+            $this->log->debug('ESTORNO RESPONSE:' . PHP_EOL . json_encode($charge->jsonSerialize()));
 
             return $this->fillTransacao($charge);
 
