@@ -1,29 +1,17 @@
 {
-	"description" : "CANNAL - Pagamentos",
-	"name" : "ariellcannal/pagamentos",
-	"type" : "project",
-	"license" : "MIT",
-	"require" : {
-		"pagarme/pagarme-php-sdk" : "~6.8",
-		"ariellcannal/logs" : "master"
-	},
-	"repositories" : [{
-			"type" : "git",
-			"url" : "git@github.com:ariellcannal/logs.git",
-			"name" : "logs"
-		}
-	],
-	"autoload" : {
-		"psr-4" : {
-			"PagamentosCannal\\" : "Interfaces/",
-			"PagamentosCannal\\Entities\\" : "Entities/"
-		}
-	},
-	"autoload" : {
-		"psr-4" : {
-			"CANNALPagamentos\\" : "src/"
-		}
-	},
+    "description": "CANNAL - Pagamentos",
+    "name": "ariellcannal/pagamentos",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "pagarme/pagarme-php-sdk": "~6.8",
+        "monolog/monolog": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "CANNALPagamentos\\": "src/"
+        }
+    },
     "minimum-stability": "dev",
     "prefer-stable": true
 }
