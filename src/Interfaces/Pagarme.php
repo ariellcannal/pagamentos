@@ -76,13 +76,6 @@ class Pagarme implements PagamentosInterface
             $this->nome = 'Pagarme';
         }
 
-        // Define caminho do arquivo de log
-        $logPath = defined('WRITEPATH') ? WRITEPATH . 'logs/pagarme.log' : __DIR__ . '/../../logs/pagarme.log';
-        $logDirectory = dirname($logPath);
-        if (! is_dir($logDirectory)) {
-            mkdir($logDirectory, 0775, true);
-        }
-        
     }
 
     public function getNome(): ?string
