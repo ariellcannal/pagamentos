@@ -29,9 +29,9 @@ use PagarmeApiSDKLib\Models\Builders\CreatePhonesRequestBuilder;
 use PagarmeApiSDKLib\Models\Builders\CreatePhoneRequestBuilder;
 use PagarmeApiSDKLib\Models\Builders\CreateCardRequestBuilder;
 use PagarmeApiSDKLib\Models\Builders\CreateCardOptionsRequestBuilder;
-use PagarmeApiSDKLib\Exceptions\ErrorException;
-use PagarmeApiSDKLib\Exceptions\ApiException;
 use PagarmeApiSDKLib\Models\CreatePhonesRequest;
+use RuntimeException;
+use Throwable;
 
 /**
  * Classe responsável por integrar pagamentos via Pagar.me.
@@ -93,29 +93,35 @@ class Pagarme implements PagamentosInterface
     /**
      * Trata exceções da API.
      *
-     * @param mixed $ex
-     *            Exceção lançada.
-     * @return void
+     * @param Throwable $exception Exceção capturada.
+     *
+     * @throws RuntimeException
      */
-    private function exception($ex): void
+    private function handleException(Throwable $exception): void
     {
-        $this->logger->error('PAGARME ERROR:' . PHP_EOL . $ex->getHttpResponse()
-            ->getRawBody() . PHP_EOL . $ex->getTraceAsString());
-        $text = json_decode($ex->getHttpResponse()->getRawBody())->message;
-        set_status_header($ex->getHttpResponse()->getStatusCode(), $text);
-        echo $text;
-        exit(1); // EXIT_ERROR
+        $response = method_exists($exception, 'getHttpResponse') ? $exception->getHttpResponse() : null;
+        $rawBody  = $response ? $response->getRawBody() : null;
+        $message  = $rawBody ? (json_decode($rawBody)->message ?? $exception->getMessage()) : $exception->getMessage();
+        $status   = $response ? $response->getStatusCode() : $exception->getCode();
+        $logBody  = $rawBody ?? $message;
+        $this->logger->error('PAGARME ERROR:' . PHP_EOL . $logBody . PHP_EOL . $exception->getTraceAsString());
+        throw new RuntimeException($message, $status, $exception);
     }
 
-    private function getClient()
+    /**
+     * Recupera instância do cliente Pagarme.
+     *
+     * @return PagarmeApiSDKClient
+     *
+     * @throws RuntimeException
+     */
+    private function getClient(): PagarmeApiSDKClient
     {
         try {
             $this->client = PagarmeApiSDKClientBuilder::init()->basicAuthCredentials(BasicAuthCredentialsBuilder::init($this->key, 'BasicAuthPassword'))->build();
             return $this->client;
-        } catch (ErrorException $e) {
-            $this->exception($e);
-        } catch (ApiException $e) {
-            $this->exception($e);
+        } catch (Throwable $e) {
+            $this->handleException($e);
         }
     }
 
@@ -153,10 +159,8 @@ class Pagarme implements PagamentosInterface
                 $this->logger->debug('CREATE ADDRESS REQUEST:' . PHP_EOL . json_encode($this->custumer_address));
 
                 return $this->custumer_address;
-            } catch (ErrorException $e) {
-                $this->exception($e);
-            } catch (ApiException $e) {
-                $this->exception($e);
+            } catch (Throwable $e) {
+                $this->handleException($e);
             }
         }
     }
@@ -210,10 +214,8 @@ class Pagarme implements PagamentosInterface
                     $this->logger->debug('CREATE CUSTUMER REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
                 }
                 return $cli;
-            } catch (ErrorException $e) {
-                $this->exception($e);
-            } catch (ApiException $e) {
-                $this->exception($e);
+            } catch (Throwable $e) {
+                $this->handleException($e);
             }
         }
     }
@@ -247,10 +249,8 @@ class Pagarme implements PagamentosInterface
 
             $cartao->setId($result->getId());
             return $cartao;
-        } catch (ErrorException $e) {
-            $this->exception($e);
-        } catch (ApiException $e) {
-            $this->exception($e);
+        } catch (Throwable $e) {
+            $this->handleException($e);
         }
     }
 
@@ -273,10 +273,8 @@ class Pagarme implements PagamentosInterface
                     ->setBandeira($card->getBrand());
             }
             return $retorno;
-        } catch (ErrorException $e) {
-            $this->exception($e);
-        } catch (ApiException $e) {
-            $this->exception($e);
+        } catch (Throwable $e) {
+            $this->handleException($e);
         }
     }
 
@@ -323,9 +321,7 @@ class Pagarme implements PagamentosInterface
                         // $customerController->updateCard($alu->getIdOperadora(), $cartao, UpdateCardRequestBuilder::init($card->getHolderName(), $card->getExpMonth(), $card->getExpYear(), $this->get_custumer_address($alu), $card->getMetadata(), (is_null($card->getLabel()) ? "" : $card->getLabel()))->build());
                     }
                     $creditCard->setCardId($cartao);
-                } catch (ErrorException $e) {
-                    return false;
-                } catch (ApiException $e) {
+                } catch (Throwable $e) {
                     return false;
                 }
             }
@@ -403,10 +399,8 @@ class Pagarme implements PagamentosInterface
                 ->setOperadoraResposta(json_encode($charge))
                 ->setOperadoraStatus($charge->getStatus())
                 ->setOperadoraID($order->getCharges()[0]->getId());
-        } catch (ErrorException $e) {
-            $this->exception($e);
-        } catch (ApiException $e) {
-            $this->exception($e);
+        } catch (Throwable $e) {
+            $this->handleException($e);
         }
     }
 
@@ -472,10 +466,8 @@ class Pagarme implements PagamentosInterface
                 ->setOperadoraResposta(json_encode($charge))
                 ->setOperadoraStatus($charge->getStatus())
                 ->setOperadoraID($order->getCharges()[0]->getId());
-        } catch (ErrorException $e) {
-            $this->exception($e);
-        } catch (ApiException $e) {
-            $this->exception($e);
+        } catch (Throwable $e) {
+            $this->handleException($e);
         }
     }
 
@@ -513,10 +505,8 @@ class Pagarme implements PagamentosInterface
                 ->setOperadoraStatus($charge->getStatus())
                 ->setOperadoraID($charge->getId());
             return $transacao;
-        } catch (ErrorException $e) {
-            $this->exception($e);
-        } catch (ApiException $e) {
-            $this->exception($e);
+        } catch (Throwable $e) {
+            $this->handleException($e);
         }
     }
 
@@ -602,10 +592,8 @@ class Pagarme implements PagamentosInterface
                 ->setOperadoraID($charge->getId())
                 ->setOperadoraResposta(json_encode($charge))
                 ->setOperadoraStatus($charge->getStatus());
-        } catch (ErrorException $e) {
-            $this->exception($e);
-        } catch (ApiException $e) {
-            $this->exception($e);
+        } catch (Throwable $e) {
+            $this->handleException($e);
         }
     }
 
@@ -621,10 +609,8 @@ class Pagarme implements PagamentosInterface
             $result = $chargeController->cancelCharge($charge->getOperadoraId());
 
             return $result;
-        } catch (ErrorException $e) {
-            $this->exception($e);
-        } catch (ApiException $e) {
-            $this->exception($e);
+        } catch (Throwable $e) {
+            $this->handleException($e);
         }
     }
 
@@ -660,10 +646,8 @@ class Pagarme implements PagamentosInterface
                     ->format('Y-m-d'));
             }
             return $rec;
-        } catch (ErrorException $e) {
-            $this->exception($e);
-        } catch (ApiException $e) {
-            $this->exception($e);
+        } catch (Throwable $e) {
+            $this->handleException($e);
         }
     }
 
@@ -745,10 +729,8 @@ class Pagarme implements PagamentosInterface
                 }
             }
             return $retorno;
-        } catch (ErrorException $e) {
-            $this->exception($e);
-        } catch (ApiException $e) {
-            $this->exception($e);
+        } catch (Throwable $e) {
+            $this->handleException($e);
         }
     }
 }
