@@ -102,6 +102,35 @@ class Pagarme implements PagamentosInterface
     }
 
     /**
+     * Ajusta o HttpClient da SDK para desabilitar a verificação SSL em desenvolvimento.
+     *
+     * @param PagarmeApiSDKClient $client Instância do cliente da SDK.
+     *
+     * @return void
+     */
+    private function configureHttpClient(PagarmeApiSDKClient $client): void
+    {
+        if (! defined('ENVIRONMENT') || ENVIRONMENT !== 'development') {
+            return;
+        }
+
+        $sdkReflection   = new \ReflectionObject($client);
+        $coreClientField = $sdkReflection->getProperty('client');
+        $coreClientField->setAccessible(true);
+        $coreClient = $coreClientField->getValue($client);
+
+        $httpClient = $coreClient->getHttpClient();
+
+        $httpReflection = new \ReflectionObject($httpClient);
+        $configField    = $httpReflection->getProperty('config');
+        $configField->setAccessible(true);
+
+        /** @var \Unirest\Configuration $config */
+        $config = $configField->getValue($httpClient);
+        $config->verifyPeer(false)->verifyHost(false);
+    }
+
+    /**
      * Recupera instância do cliente Pagarme.
      *
      * @return PagarmeApiSDKClient
@@ -111,7 +140,12 @@ class Pagarme implements PagamentosInterface
     private function getClient(): PagarmeApiSDKClient
     {
         try {
-            $this->client = PagarmeApiSDKClientBuilder::init()->basicAuthCredentials(BasicAuthCredentialsBuilder::init($this->key, 'BasicAuthPassword'))->build();
+            $this->client = PagarmeApiSDKClientBuilder::init()
+                ->basicAuthCredentials(BasicAuthCredentialsBuilder::init($this->key, 'BasicAuthPassword'))
+                ->build();
+
+            $this->configureHttpClient($this->client);
+
             return $this->client;
         } catch (Throwable $e) {
             $this->handleException($e);
