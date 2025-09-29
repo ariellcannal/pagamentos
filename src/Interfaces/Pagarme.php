@@ -116,18 +116,70 @@ class Pagarme implements PagamentosInterface
      */
     private function normalizeException(Throwable $exception, ?string $rawBody): array
     {
-        $decodedBody = $rawBody ? json_decode($rawBody) : null;
-        $message     = (is_object($decodedBody) && isset($decodedBody->message)) ? $decodedBody->message : $exception->getMessage();
+        $decodedBody = null;
+
+        if ($rawBody !== null) {
+            $decodedBody = json_decode($rawBody, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $decodedBody = null;
+            }
+        }
+
+        $message = $this->extractApiErrorMessage($decodedBody) ?? $exception->getMessage();
         $status      = null;
 
         if ($exception instanceof JsonMapperException
             && str_contains($exception->getMessage(), 'PagarmeApiSDKLib\\Exceptions\\ErrorException: request')
         ) {
-            $message = 'Transação não encontrada na operadora.';
             $status  = 404;
         }
 
         return [$message, $status];
+    }
+
+    /**
+     * Extrai a mensagem de erro retornada pela operadora, se disponível.
+     *
+     * @param mixed $payload Dados decodificados do retorno da API.
+     *
+     * @return string|null
+     */
+    private function extractApiErrorMessage(mixed $payload): ?string
+    {
+        if (is_string($payload) && $payload !== '') {
+            return $payload;
+        }
+
+        if (is_object($payload)) {
+            $payload = get_object_vars($payload);
+        }
+
+        if (! is_array($payload)) {
+            return null;
+        }
+
+        if (array_key_exists('message', $payload) && is_string($payload['message']) && $payload['message'] !== '') {
+            return $payload['message'];
+        }
+
+        if (array_key_exists('errors', $payload)) {
+            $message = $this->extractApiErrorMessage($payload['errors']);
+
+            if ($message !== null) {
+                return $message;
+            }
+        }
+
+        foreach ($payload as $value) {
+            $message = $this->extractApiErrorMessage($value);
+
+            if ($message !== null) {
+                return $message;
+            }
+        }
+
+        return null;
     }
 
     /**
