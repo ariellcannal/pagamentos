@@ -15,6 +15,7 @@ use PagarmeApiSDKLib\Authentication\BasicAuthCredentialsBuilder;
 use PagarmeApiSDKLib\Models\CreateAddressRequest;
 use PagarmeApiSDKLib\Models\CreateCustomerRequest;
 use PagarmeApiSDKLib\Models\CreatePixPaymentRequest;
+use apimatic\jsonmapper\JsonMapperException;
 use PagarmeApiSDKLib\Models\CreateCancelChargeRequest;
 use PagarmeApiSDKLib\Models\CreateCreditCardPaymentRequest;
 use PagarmeApiSDKLib\Models\CreateCardRequest;
@@ -94,11 +95,39 @@ class Pagarme implements PagamentosInterface
     {
         $response = method_exists($exception, 'getHttpResponse') ? $exception->getHttpResponse() : null;
         $rawBody  = $response ? $response->getRawBody() : null;
-        $message  = $rawBody ? (json_decode($rawBody)->message ?? $exception->getMessage()) : $exception->getMessage();
-        $status   = $response ? $response->getStatusCode() : $exception->getCode();
-        $logBody  = $rawBody ?? $message;
+
+        [$message, $statusOverride] = $this->normalizeException($exception, $rawBody);
+
+        $status  = $response ? $response->getStatusCode() : ($statusOverride ?? $exception->getCode());
+        $logBody = $rawBody ?? $message;
+
         $this->logger->error('PAGARME ERROR:' . PHP_EOL . $logBody . PHP_EOL . $exception->getTraceAsString());
+
         throw new RuntimeException($message, $status, $exception);
+    }
+
+    /**
+     * Normaliza a mensagem e o status das exceções da SDK.
+     *
+     * @param Throwable $exception Exceção capturada.
+     * @param string|null $rawBody Corpo bruto retornado pela API.
+     *
+     * @return array{0:string,1:?int}
+     */
+    private function normalizeException(Throwable $exception, ?string $rawBody): array
+    {
+        $decodedBody = $rawBody ? json_decode($rawBody) : null;
+        $message     = (is_object($decodedBody) && isset($decodedBody->message)) ? $decodedBody->message : $exception->getMessage();
+        $status      = null;
+
+        if ($exception instanceof JsonMapperException
+            && str_contains($exception->getMessage(), 'PagarmeApiSDKLib\\Exceptions\\ErrorException: request')
+        ) {
+            $message = 'Transação não encontrada na operadora.';
+            $status  = 404;
+        }
+
+        return [$message, $status];
     }
 
     /**
