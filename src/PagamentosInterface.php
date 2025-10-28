@@ -17,6 +17,8 @@ interface PagamentosInterface
     public function creditCard(Cliente &$cli, Pedido $pedido, Cartao|string $cartao): Transacao;
 
     public function pix(Cliente &$cli, Pedido $pedido): Transacao;
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao;
 
     public function refund(string $charge_id, int $amount): Transacao;
 

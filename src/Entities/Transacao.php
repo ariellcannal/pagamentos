@@ -1,7 +1,7 @@
 <?php
 namespace CANNALPagamentos\Entities;
 
-class Transacao extends _EntityBase
+class Transacao extends AbstractEntity
 {
 
     protected ?int $id = null;
@@ -47,6 +47,8 @@ class Transacao extends _EntityBase
     protected ?string $operadoraID = null;
 
     protected ?string $operadoraData = null;
+
+    protected ?string $operadoraCodigo = null;
 
     protected ?string $criacao = null;
 
@@ -565,3 +567,26 @@ class Transacao extends _EntityBase
         return $this;
     }
 }
+
+
+    /**
+     * Get the value of operadoraCodigo
+     *
+     * @return string|null
+     */
+    public function getOperadoraCodigo(): ?string
+    {
+        return $this->operadoraCodigo;
+    }
+
+    /**
+     * Set the value of operadoraCodigo
+     *
+     * @param string|null $operadoraCodigo
+     * @return self
+     */
+    public function setOperadoraCodigo(?string $operadoraCodigo): self
+    {
+        $this->operadoraCodigo = $operadoraCodigo;
+        return $this;
+    }
