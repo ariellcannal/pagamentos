@@ -73,16 +73,192 @@ class Pagarme implements PagamentosInterface
 
         if ($nome) {
             $this->nome = $nome;
-        } else {
-            $this->nome = 'Pagarme';
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
 
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
     }
+} else {
+            $this->nome = 'Pagarme';
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     public function getNome(): ?string
     {
         return $this->nome;
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
     }
+}
 
     /**
      * Trata exceções da API.
@@ -104,7 +280,51 @@ class Pagarme implements PagamentosInterface
         $this->logger->error('PAGARME ERROR:' . PHP_EOL . $logBody . PHP_EOL . $exception->getTraceAsString());
 
         throw new RuntimeException($message, $status, $exception);
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
     }
+}
 
     /**
      * Normaliza a mensagem e o status das exceções da SDK.
@@ -112,7 +332,51 @@ class Pagarme implements PagamentosInterface
      * @param Throwable $exception Exceção capturada.
      * @param string|null $rawBody Corpo bruto retornado pela API.
      *
-     * @return array{0:string,1:?int}
+     * @return array{0:string,1:?int
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
      */
     private function normalizeException(Throwable $exception, ?string $rawBody): array
     {
@@ -123,8 +387,96 @@ class Pagarme implements PagamentosInterface
 
             if (json_last_error() !== JSON_ERROR_NONE) {
                 $decodedBody = null;
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
         $message = $this->extractApiErrorMessage($decodedBody) ?? $exception->getMessage();
         $status      = null;
@@ -133,10 +485,98 @@ class Pagarme implements PagamentosInterface
             && str_contains($exception->getMessage(), 'PagarmeApiSDKLib\\Exceptions\\ErrorException: request')
         ) {
             $status  = 404;
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
 
-        return [$message, $status];
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
     }
+}
+
+        return [$message, $status];
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     /**
      * Extrai a mensagem de erro retornada pela operadora, se disponível.
@@ -149,38 +589,434 @@ class Pagarme implements PagamentosInterface
     {
         if (is_string($payload) && $payload !== '') {
             return $payload;
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
         if (is_object($payload)) {
             $payload = get_object_vars($payload);
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
         if (! is_array($payload)) {
             return null;
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
         if (array_key_exists('message', $payload) && is_string($payload['message']) && $payload['message'] !== '') {
             return $payload['message'];
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
         if (array_key_exists('errors', $payload)) {
             $message = $this->extractApiErrorMessage($payload['errors']);
 
             if ($message !== null) {
                 return $message;
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
         foreach ($payload as $value) {
             $message = $this->extractApiErrorMessage($value);
 
             if ($message !== null) {
                 return $message;
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
 
-        return null;
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
     }
+}
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+
+        return null;
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     /**
      * Ajusta o HttpClient da SDK para desabilitar a verificação SSL em desenvolvimento.
@@ -193,7 +1029,51 @@ class Pagarme implements PagamentosInterface
     {
         if (! defined('ENVIRONMENT') || ENVIRONMENT !== 'development') {
             return;
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
         $sdkReflection   = new \ReflectionObject($client);
         $coreClientField = $sdkReflection->getProperty('client');
@@ -209,7 +1089,51 @@ class Pagarme implements PagamentosInterface
         /** @var \Unirest\Configuration $config */
         $config = $configField->getValue($httpClient);
         $config->verifyPeer(false)->verifyHost(false);
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
     }
+}
 
     /**
      * Recupera instância do cliente Pagarme.
@@ -228,31 +1152,383 @@ class Pagarme implements PagamentosInterface
             $this->configureHttpClient($this->client);
 
             return $this->client;
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
         } catch (Throwable $e) {
             $this->handleException($e);
         }
     }
+} catch (Throwable $e) {
+            $this->handleException($e);
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     public function getCustumerAddress(Cliente &$cli): bool|CreateAddressRequest
     {
         if (! empty($this->custumer_address) && $this->custumer_address instanceof CreateAddressRequest) {
             return $this->custumer_address;
-        } else {
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else {
             try {
                 if (empty($cli->getEnderecoCidade()) || empty($cli->getEnderecoEstado())) {
                     return false;
-                }
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
                 if (! $this->client) {
                     $this->getClient();
-                }
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
                 if (ENVIRONMENT == 'production' && $cli->getIdOperadora() != "") {
                     $customerController = $this->client->getCustomersController();
                     $addresses = $customerController->getAddresses($cli->getIdOperadora());
                     foreach ($addresses->getData() as $addr) {
                         $customerController->deleteAddress($cli->getIdOperadora(), $addr->getId());
-                    }
-                }
+                    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
                 $cli->setEnderecoCep(str_pad(preg_replace('/[^0-9]/', '', $cli->getEnderecoCep()), 8, '0', STR_PAD_LEFT));
 
@@ -260,27 +1536,335 @@ class Pagarme implements PagamentosInterface
 
                 if (empty($cli->getEnderecoComplemento())) {
                     $cli->setEnderecoComplemento('');
-                }
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
                 $this->custumer_address = new CreateAddressRequest($cli->getEndereco(), $cli->getEnderecoNumero(), $cli->getEnderecoCep(), $cli->getEnderecoBairro(), $cli->getEnderecoCidade(), $cli->getEnderecoEstado(), 'BR', $cli->getEnderecoComplemento(), $cli->getEndereco() . ', ' . $cli->getEnderecoNumero() . ($cli->getEnderecoComplemento() != "" ? ', ' . $cli->getEnderecoComplemento() : ''), $cli->getEnderecoBairro() . ', ' . $cli->getEnderecoCidade() . '/' . $cli->getEnderecoEstado() . ' - ' . $cli->getEnderecoCep());
 
                 $this->logger->debug('CREATE ADDRESS REQUEST:' . PHP_EOL . json_encode($this->custumer_address));
 
                 return $this->custumer_address;
-            } catch (Throwable $e) {
-                $this->handleException($e);
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
         }
     }
+} catch (Throwable $e) {
+                $this->handleException($e);
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     public function updateCustumer(Cliente &$cli): Cliente
     {
         if (! empty($this->custumer) && $this->custumer_address instanceof CreateCustomerRequest) {
             return $this->custumer;
-        } else {
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else {
             if (! $this->client) {
                 $this->getClient();
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             try {
                 if ($cli->getCelular()) {
                     $cli->setCelular(preg_replace('/[^0-9]/', '', $cli->getCelular()));
@@ -289,12 +1873,144 @@ class Pagarme implements PagamentosInterface
                         ->number(substr($cli->getCelular(), 2, strlen($cli->getCelular()) - 2))
                         ->build())
                         ->build();
-                } else {
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else {
                     $phone = new CreatePhonesRequest();
-                }
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
                 if ($cli->getCpf()) {
                     $cli->setCpf(preg_replace('/[^0-9]/', '', $cli->getCpf()));
-                }
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
                 $customerController = $this->client->getCustomersController();
 
@@ -316,24 +2032,332 @@ class Pagarme implements PagamentosInterface
                         ->code($cli->getId())
                         ->build());
                     $this->logger->debug('UPDATE CUSTUMER REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
-                } else {
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else {
                     $result = $customerController->createCustomer($this->custumer);
                     $cli->setIdOperadora($result->getId());
                     $this->logger->debug('CREATE CUSTUMER REQUEST:' . PHP_EOL . json_encode($result->jsonSerialize()));
-                }
-                return $cli;
-            } catch (Throwable $e) {
-                $this->handleException($e);
-            }
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
         }
     }
+}
+                return $cli;
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} catch (Throwable $e) {
+                $this->handleException($e);
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     public function saveCard(Cliente &$cli, Cartao $cartao): Cartao
     {
         try {
             if (! $this->client) {
                 $this->getClient();
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
             $customerController = $this->client->getCustomersController();
 
@@ -357,17 +2381,193 @@ class Pagarme implements PagamentosInterface
 
             $cartao->setId($result->getId());
             return $cartao;
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
         } catch (Throwable $e) {
             $this->handleException($e);
         }
     }
+} catch (Throwable $e) {
+            $this->handleException($e);
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     public function getCards(Cliente &$cli): array
     {
         try {
             if (! $this->client) {
                 $this->getClient();
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
             $customerController = $this->client->getCustomersController();
             $result = $customerController->getCards($cli->getIdOperadora());
@@ -379,19 +2579,239 @@ class Pagarme implements PagamentosInterface
                     ->setVencimentoAno($card->getExpYear())
                     ->setUltimosQuatro($card->getLastFourDigits())
                     ->setBandeira($card->getBrand());
-            }
-            return $retorno;
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
         } catch (Throwable $e) {
             $this->handleException($e);
         }
     }
+}
+            return $retorno;
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} catch (Throwable $e) {
+            $this->handleException($e);
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     public function creditCard(Cliente &$cli, Pedido $pedido, Cartao|string $cartao): Transacao
     {
         try {
             if (! $this->client) {
                 $this->getClient();
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
             $ordersController = $this->client->getOrdersController();
 
@@ -420,19 +2840,283 @@ class Pagarme implements PagamentosInterface
                 if (ENVIRONMENT == 'production' && $cartao->getSalvar() && $cli->getIdOperadora()) {
                     $customerController = $this->client->getCustomersController();
                     $customerController->createCard($cli->getIdOperadora(), $card);
-                }
-            } else {
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else {
                 $customerController = $this->client->getCustomersController();
                 try {
                     if (ENVIRONMENT == 'production') {
                         // $card = $customerController->getCard($alu->getIdOperadora(), $cartao);
                         // $customerController->updateCard($alu->getIdOperadora(), $cartao, UpdateCardRequestBuilder::init($card->getHolderName(), $card->getExpMonth(), $card->getExpYear(), $this->get_custumer_address($alu), $card->getMetadata(), (is_null($card->getLabel()) ? "" : $card->getLabel()))->build());
-                    }
+                    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
                     $creditCard->setCardId($cartao);
-                } catch (Throwable $e) {
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} catch (Throwable $e) {
                     return false;
-                }
-            }
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
             $creditCard->setCapture(true);
             $creditCard->setStatementDescriptor($pedido->getDescricaoFatura());
@@ -457,11 +3141,99 @@ class Pagarme implements PagamentosInterface
                     ->getBrand() . ' final ' . $charge->getLastTransaction()
                     ->getCard()
                     ->getLastFourDigits());
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             if ($charge->getLastTransaction()->getInstallments()) {
                 $transacao->setParcelas($charge->getLastTransaction()
                     ->getInstallments());
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             $transacao->setTipo('cartao')->setOperadoraID($order->getCharges()[0]->getId());
 
             return $this->fillTransacao($charge, $transacao);
@@ -470,34 +3242,474 @@ class Pagarme implements PagamentosInterface
             if ($charge->getAntifraudResponse()->getStatus() == 'reproved') {
                 if ($charge->getAntifraudResponse()->getReturnMessage()) {
                     $erros[] = 'Antifraude: ' . $charge->getAntifraudResponse()->getReturnMessage();
-                } else {
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else {
                     $erros[] = 'O Antifraude da operadora não aprovou a transação. Verifique todos os dados de inscrição e tente novamente. Em caso de dúvidas contate oficinas@cannal.com.br';
-                }
-            }
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             $errors = $charge->getGatewayResponse()->getErrors();
             if ($errors) {
                 foreach ($charge->getGatewayResponse()->getErrors() as $error) {
                     $error = $error->getMessage();
                     if ($error) {
                         $erros[] = $error;
-                    }
-                }
-            }
+                    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             if (count($erros)) {
                 $erros = implode(' ' . PHP_EOL, $erros);
                 $transacao->setOperadoraErros($erros);
-            } else if ($charge->getStatus() === 'paid') {
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else if ($charge->getStatus() === 'paid') {
                 $transacao->setConfirmada(true);
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
             if ($charge->getCard()) {
                 $transacao->setCartao($charge->getCard()
                     ->getBrand() . ' final ' . $charge->getCard()
                     ->getLastFourDigits());
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             if ($charge->getInstallments()) {
                 $transacao->setParcelas($charge->getInstallments());
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             return $transacao->setTipo('cartao')
                 ->setValorBruto($charge->getAmount() / 100)
                 ->setDataTransacao($charge->getCreatedAt()
@@ -507,17 +3719,193 @@ class Pagarme implements PagamentosInterface
                 ->setOperadoraResposta(json_encode($charge))
                 ->setOperadoraStatus($charge->getStatus())
                 ->setOperadoraID($order->getCharges()[0]->getId());
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
         } catch (Throwable $e) {
             $this->handleException($e);
         }
     }
+} catch (Throwable $e) {
+            $this->handleException($e);
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     public function pix(Cliente &$cli, Pedido $pedido): Transacao
     {
         try {
             if (! $this->client) {
                 $this->getClient();
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             $ordersController = $this->client->getOrdersController();
 
             $this->updateCustumer($cli);
@@ -557,11 +3945,143 @@ class Pagarme implements PagamentosInterface
                     $error = $error->getMessage();
                     if ($error) {
                         $erros[] = $error;
-                    }
+                    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
                     $erros = implode(' ' . PHP_EOL, $erros);
                     $transacao->setOperadoraErros($erros);
-                }
-            }
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
             return $transacao->setTipo('pix')
                 ->setDataExpiracao($charge->getExpiresAt()
@@ -574,22 +4094,242 @@ class Pagarme implements PagamentosInterface
                 ->setOperadoraResposta(json_encode($charge))
                 ->setOperadoraStatus($charge->getStatus())
                 ->setOperadoraID($order->getCharges()[0]->getId());
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
         } catch (Throwable $e) {
             $this->handleException($e);
         }
     }
+} catch (Throwable $e) {
+            $this->handleException($e);
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     public function refund(string $charge_id, int $amount): Transacao
     {
         try {
             if (! $this->client) {
                 $this->getClient();
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
             if (ENVIRONMENT == 'development') {
                 $charge_id = 'ch_j3NPOrJCkC3OREWm';
                 $amount = 1000;
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
             $chargeController = $this->client->getChargesController();
 
@@ -613,45 +4353,617 @@ class Pagarme implements PagamentosInterface
                 ->setOperadoraStatus($charge->getStatus())
                 ->setOperadoraID($charge->getId());
             return $transacao;
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
         } catch (Throwable $e) {
             $this->handleException($e);
         }
     }
+} catch (Throwable $e) {
+            $this->handleException($e);
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     private function fillTransacao(GetChargeResponse $charge, ?Transacao $transacao = null): Transacao
     {
         if (! $transacao) {
             $transacao = new Transacao();
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
         $erros = [];
         if (method_exists($charge, 'getAntifraudResponse') && $charge->getAntifraudResponse()->getStatus() == 'reproved') {
             if ($charge->getAntifraudResponse()->getReturnMessage()) {
                 $erros[] = 'Antifraude: ' . $charge->getAntifraudResponse()->getReturnMessage();
-            } else {
-                $erros[] = 'O Antifraude da operadora não aprovou a transação. Verifique todos os dados de inscrição e tente novamente. Em caso de dúvidas contate oficinas@cannal.com.br';
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else {
+                $erros[] = 'O Antifraude da operadora não aprovou a transação. Verifique todos os dados de inscrição e tente novamente. Em caso de dúvidas contate oficinas@cannal.com.br';
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
         if (method_exists($charge, 'getGatewayResponse')) {
             foreach ($charge->getGatewayResponse()->getErrors() as $error) {
                 $error = $error->getMessage();
                 if ($error) {
                     $erros[] = $error;
-                }
-            }
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
         if (count($erros)) {
             $erros = implode(' ' . PHP_EOL, $erros);
             $transacao->setOperadoraErros($erros);
-        } else if ($charge->getStatus() === 'paid') {
-            $transacao->setConfirmada(true);
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else if ($charge->getStatus() === 'paid') {
+            $transacao->setConfirmada(true);
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
         if ($charge->getCanceledAt()) {
             $transacao->setDataCancelamento($charge->getCanceledAt()
                 ->format('Y-m-d H:i:s'));
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
         }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
         return $transacao->setDataTransacao($charge->getCreatedAt()
             ->format('Y-m-d H:i:s'))
             ->setValorCancelado($charge->getCanceledAmount() / 100)
@@ -660,14 +4972,102 @@ class Pagarme implements PagamentosInterface
             ->setOperadoraData(date('Y-m-d H:i:s'))
             ->setOperadoraResposta(json_encode($charge))
             ->setOperadoraStatus($charge->getStatus());
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
     }
+}
 
     public function getCharge(string $charge_id): ?Transacao
     {
         try {
             if (! $this->client) {
                 $this->getClient();
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
             $chargeController = $this->client->getChargesController();
 
@@ -682,55 +5082,627 @@ class Pagarme implements PagamentosInterface
                 $transacao->setDataTransacao($charge->getPaidAt()
                     ->format('Y-m-d H:i:s'));
                 $transacao->setValorBruto($charge->getPaidAmount() / 100);
-            } else {
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else {
                 $transacao->setValorBruto($charge->getAmount() / 100);
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             if ($charge->getDueAt()) {
                 $transacao->setDataExpiracao($charge->getDueAt()
                     ->format('Y-m-d H:i:s'));
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             if ($charge->getCanceledAt()) {
                 $transacao->setDataCancelamento($charge->getCanceledAt()
                     ->format('Y-m-d H:i:s'))
                     ->setConfirmada(false);
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             return $transacao->setValorCancelado($charge->getCanceledAmount() / 100)
                 ->setValorLiquido(($charge->getAmount() - $charge->getCanceledAmount()) / 100)
                 ->setOperadoraData(date('Y-m-d H:i:s'))
                 ->setOperadoraID($charge->getId())
                 ->setOperadoraResposta(json_encode($charge))
                 ->setOperadoraStatus($charge->getStatus());
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
         } catch (Throwable $e) {
             $this->handleException($e);
         }
     }
+} catch (Throwable $e) {
+            $this->handleException($e);
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     public function cancelCharge(string $charge_id)
     {
         try {
             if (! $this->client) {
                 $this->getClient();
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
             $chargeController = $this->client->getChargesController();
 
             $result = $chargeController->cancelCharge($charge->getOperadoraId());
 
             return $result;
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
         } catch (Throwable $e) {
             $this->handleException($e);
         }
     }
+} catch (Throwable $e) {
+            $this->handleException($e);
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     public function getReceivable(int $payable_id): ?Recebivel
     {
         try {
             if ($payable_id === 0) {
                 return null;
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             if (! $this->client) {
                 $this->getClient();
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             $payablesController = $this->client->getPayablesController();
 
             $payable = $payablesController->getPayableById($payable_id);
@@ -749,15 +5721,235 @@ class Pagarme implements PagamentosInterface
                 $rec->setEstornoData($payable->getCreatedAt()
                     ->format('Y-m-d'))
                     ->setEstornoValor(($payable->getAmount() / 100) * - 1);
-            } else {
-                $rec->setDataTransacao($payable->getCreatedAt()
-                    ->format('Y-m-d'));
-            }
-            return $rec;
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
         } catch (Throwable $e) {
             $this->handleException($e);
         }
     }
+} else {
+                $rec->setDataTransacao($payable->getCreatedAt()
+                    ->format('Y-m-d'));
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+            return $rec;
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} catch (Throwable $e) {
+            $this->handleException($e);
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
     public function getReceivables(string $operadora_id = null, int $parcela_id = null, string $status = null, int $days = null): ?array
     {
@@ -768,13 +5960,145 @@ class Pagarme implements PagamentosInterface
 
             if (! $this->client) {
                 $this->getClient();
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             if (! is_null($days)) {
                 $paymentDateSince = new \DateTime();
                 $paymentDateSince->modify('-' . (int) $days . ' day');
-            } else {
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else {
                 $paymentDateSince = null;
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             $payablesController = $this->client->getPayablesController();
 
             switch (substr($operadora_id, 0, 3)) {
@@ -786,43 +6110,483 @@ class Pagarme implements PagamentosInterface
                     $chargeId = null;
                     $gatewayId = (int) $operadora_id;
                     break;
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             $result = $payablesController->getPayables(null, null, null, $parcela_id, $status, null, null, $chargeId, null, $paymentDateSince, null, null, null, null, null, null, 1000, $gatewayId);
             if (! count($result->getData()) && $operadora_id) {
                 if ($operadora_id && $result = $this->getReceivable((int) $operadora_id)) {
                     return [
                         $result
                     ];
-                }
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
                 return null;
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
             foreach ($result->getData() as $payable) {
                 $charges[$payable->getChargeId()][$payable->getInstallment()][] = $payable;
-            }
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             foreach ($charges as $charge_id => $installments) {
                 foreach ($installments as $installment => $payables) {
                     $key = $charge_id . '_' . $installment;
                     if (isset($retorno[$key])) {
                         $rec = $retorno[$key];
-                    } else {
+                    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else {
                         $rec = new Recebivel();
-                    }
+                    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
                     foreach ($payables as $payable) {
                         if ($payable->getType() == 'credit') {
                             $rec->setValor($rec->getValor() + ($payable->getAmount() / 100))
                                 ->setDataTransacao($payable->getCreatedAt()
                                 ->format('Y-m-d'));
-                        } else if ($payable->getType() == 'refund') {
+                        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else if ($payable->getType() == 'refund') {
                             $rec->setEstornoValor(($payable->getAmount() / 100) * - 1)
                                 ->setEstornoData($payable->getCreatedAt()
                                 ->format('Y-m-d'));
-                        } else {
+                        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} else {
                             continue;
-                        }
+                        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
                         if ($payable->getStatus() === 'paid') {
                             $rec->setRecebido(true);
-                        }
+                        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
 
                         $rec->setValorLiquido($rec->getValorLiquido() + (($payable->getAmount() - $payable->getFee()) / 100));
                         $rec = $rec->setParcela($payable->getInstallment())
@@ -833,10 +6597,273 @@ class Pagarme implements PagamentosInterface
                             ->setDataRecebimento($payable->getPaymentDate()
                             ->format('Y-m-d'));
                         $retorno[$key] = $rec;
-                    }
-                }
-            }
+                    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+                
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+            
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
             return $retorno;
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+} catch (Throwable $e) {
+            $this->handleException($e);
+        
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+}
+    
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode());
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
         } catch (Throwable $e) {
             $this->handleException($e);
         }
@@ -886,3 +6913,4 @@ class Pagarme implements PagamentosInterface
             $this->handleException($e);
         }
     }
+}
