@@ -1,7 +1,7 @@
 <?php
 namespace CANNALPagamentos\Entities;
 
-class _EntityBase
+abstract class AbstractEntity
 {
 
     /**
