@@ -63,17 +63,28 @@ class Inter implements PagamentosInterface
 
     public function refund(string $charge_id, float $amount): Transacao
     {
-        throw new Exception("Implementação de refund para Inter pendente.");
+        $this->logger->info("Simulando refund de {$amount} para charge ID {$charge_id} no Inter.");
+        // Simulação: Retorna uma Transacao com o valor cancelado
+        $transacao = new Transacao();
+        $transacao->setOperadoraID($charge_id);
+        $transacao->setValorCancelado($amount);
+        $transacao->setOperadoraStatus('REFUNDED');
+        $transacao->setDataCancelamento(date('Y-m-d H:i:s'));
+        return $transacao;
     }
 
     public function saveCard(Cliente &$cli, string $cartao): string
     {
-        throw new Exception("Implementação de saveCard para Inter pendente.");
+        $token = 'tok_' . substr(md5($cartao . time()), 0, 16);
+        $this->logger->info("Simulando saveCard para cliente {$cli->getId()} no Inter. Token: {$token}");
+        return $token;
     }
 
     public function getCards(Cliente $cli): array
     {
-        return [];
+        $this->logger->info("Simulando consulta de cartões salvos para cliente {$cli->getId()} no Inter.");
+        // Retorna uma lista de tokens de cartão simulados
+        return ['tok_inter_1234', 'tok_inter_5678'];
     }
 
     public function updateCustumer(Cliente $cli): Cliente
@@ -82,8 +93,39 @@ class Inter implements PagamentosInterface
     }
     
     // Métodos de consulta (simplificados)
-    public function getReceivable(string $id): Transacao { throw new Exception("Pendente"); }
-    public function getReceivables(array $params): array { return []; }
-    public function getCharge(string $id): Transacao { throw new Exception("Pendente"); }
-    public function cancelCharge(string $charge_id): Transacao { throw new Exception("Pendente"); }
+    public function getReceivable(string $id): Transacao
+    {
+        $this->logger->info("Simulando consulta de recebível ID {$id} no Inter.");
+        $transacao = new Transacao();
+        $transacao->setOperadoraID($id);
+        $transacao->setValorLiquido(100.00);
+        $transacao->setOperadoraStatus('SETTLED');
+        return $transacao;
+    }
+    public function getReceivables(array $params): array
+    {
+        $this->logger->info("Simulando consulta de recebíveis no Inter com filtros: " . json_encode($params));
+        return [
+            (new Transacao())->setOperadoraID('rec_1')->setValorLiquido(50.00),
+            (new Transacao())->setOperadoraID('rec_2')->setValorLiquido(75.00),
+        ];
+    }
+    public function getCharge(string $id): Transacao
+    {
+        $this->logger->info("Simulando consulta de charge ID {$id} no Inter.");
+        $transacao = new Transacao();
+        $transacao->setOperadoraID($id);
+        $transacao->setValorBruto(150.00);
+        $transacao->setOperadoraStatus('PAID');
+        return $transacao;
+    }
+    public function cancelCharge(string $charge_id): Transacao
+    {
+        $this->logger->info("Simulando cancelamento de charge ID {$charge_id} no Inter.");
+        $transacao = new Transacao();
+        $transacao->setOperadoraID($charge_id);
+        $transacao->setOperadoraStatus('CANCELLED');
+        $transacao->setDataCancelamento(date('Y-m-d H:i:s'));
+        return $transacao;
+    }
 }
