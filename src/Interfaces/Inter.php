@@ -51,7 +51,7 @@ class Inter implements PagamentosInterface
     {
         // O Inter não suporta diretamente transações de Cartão de Crédito via API de Cobrança.
         // Se a intenção é usar o Inter como adquirente, a lógica seria diferente e usaria outra API.
-        throw new Exception("O Banco Inter não suporta transações de Cartão de Crédito via API de Cobrança.");
+        throw new Exception("Não Suportado: O Banco Inter não suporta transações de Cartão de Crédito via API de Cobrança.");
     }
 
     public function pix(Cliente &$cli, Pedido $pedido, $cartao, ?string $token = null): Transacao
@@ -116,7 +116,7 @@ class Inter implements PagamentosInterface
 
     public function saveCard(Cliente &$cli, string $cartao): string
     {
-        throw new Exception("O Banco Inter não suporta a funcionalidade SaveCard via API de Cobrança.");
+        throw new Exception("Não Suportado: O Banco Inter não suporta a funcionalidade SaveCard via API de Cobrança.");
     }
 
     public function getCards(Cliente $cli): array
@@ -133,11 +133,11 @@ class Inter implements PagamentosInterface
     
     public function getReceivable(string $id): Transacao
     {
-        throw new Exception("Consulta de recebíveis não é suportada diretamente na API de Cobrança do Inter.");
+        throw new Exception("Não Suportado: Consulta de recebíveis não é suportada diretamente na API de Cobrança do Inter.");
     }
     public function getReceivables(array $params): array
     {
-        throw new Exception("Consulta de recebíveis não é suportada diretamente na API de Cobrança do Inter.");
+        throw new Exception("Não Suportado: Consulta de recebíveis não é suportada diretamente na API de Cobrança do Inter.");
     }
     public function getCharge(string $id): Transacao
     {

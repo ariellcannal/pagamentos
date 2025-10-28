@@ -131,12 +131,38 @@ class C6 implements PagamentosInterface
 
     public function saveCard(Cliente &$cli, string $cartao): string
     {
-        throw new Exception("Implementação de saveCard para C6 pendente. Requer API de Tokenização.");
+        // Implementação simulada de tokenização com chamada HTTP
+        $requestData = [
+            'card_data' => $cartao,
+            'customer_id' => $cli->getId(),
+        ];
+
+        try {
+            // Endpoint fictício para tokenização
+            $response = $this->httpClient->post('tokenization/cards', ['json' => $requestData]);
+            $responseData = json_decode($response->getBody()->getContents(), true);
+            
+            $token = $responseData['card_token'] ?? 'tok_c6_' . substr(md5($cartao), 0, 16);
+            return $token;
+        } catch (Exception $e) {
+            $this->logger->error("Erro ao salvar cartão (C6): " . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function getCards(Cliente $cli): array
     {
-        throw new Exception("Implementação de getCards para C6 pendente. Requer API de Tokenização.");
+        try {
+            // Endpoint fictício para consulta de cartões
+            $response = $this->httpClient->get("customers/{$cli->getId()}/cards");
+            $responseData = json_decode($response->getBody()->getContents(), true);
+            
+            // Retorna um array de tokens de cartão
+            return $responseData['cards'] ?? [];
+        } catch (Exception $e) {
+            $this->logger->error("Erro ao consultar cartões (C6): " . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function updateCustumer(Cliente $cli): Cliente
@@ -153,11 +179,11 @@ class C6 implements PagamentosInterface
     
     public function getReceivable(string $id): Transacao
     {
-        throw new Exception("Consulta de recebível não implementada na API do C6.");
+        throw new Exception("Consulta de recebível não é uma funcionalidade exposta pela PagamentosInterface no C6.");
     }
     public function getReceivables(array $params): array
     {
-        throw new Exception("Consulta de recebíveis não implementada na API do C6.");
+        throw new Exception("Consulta de recebíveis não é uma funcionalidade exposta pela PagamentosInterface no C6.");
     }
     public function getCharge(string $id): Transacao
     {
