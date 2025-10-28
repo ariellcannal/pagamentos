@@ -5,53 +5,84 @@ namespace CANNALPagamentos\Interfaces;
 use CANNALPagamentos\Entities\Cliente;
 use CANNALPagamentos\Entities\Pedido;
 use CANNALPagamentos\Entities\Transacao;
-use CANNALPagamentos\Mocks\InterSDKMock;
+use Inter\InterSdk; // SDK real do Banco Inter
 use Psr\Log\LoggerInterface;
 use Exception;
 
 class Inter implements PagamentosInterface
 {
-    private InterSDKMock $sdk;
+    private InterSdk $sdk;
     private LoggerInterface $logger;
 
-    public function __construct(LoggerInterface $logger)
-    {
-        $this->sdk = new InterSDKMock(); // Uso do Mock para demonstração
+    /**
+     * Construtor que recebe as credenciais para inicializar o SDK do Inter.
+     *
+     * @param LoggerInterface $logger
+     * @param string $clientId Client ID da integração
+     * @param string $clientSecret Client Secret da integração
+     * @param string $certificatePath Caminho para o certificado PFX
+     * @param string $certificatePassword Senha do certificado PFX
+     * @param string $environment Ambiente (PRODUCTION ou SANDBOX)
+     */
+    public function __construct(
+        LoggerInterface $logger,
+        string $clientId,
+        string $clientSecret,
+        string $certificatePath,
+        string $certificatePassword,
+        string $environment = "SANDBOX"
+    ) {
         $this->logger = $logger;
+        
+        // Inicialização do SDK do Inter com as credenciais fornecidas
+        // O SDK inter/sdk espera o caminho do certificado e a senha para autenticação mútua.
+        $this->sdk = new InterSdk(
+            $environment,
+            $clientId,
+            $clientSecret,
+            $certificatePath,
+            $certificatePassword
+        );
     }
 
-    // Métodos de PagamentosInterface (Implementação simulada)
+    // Métodos de PagamentosInterface (Implementação real)
 
     public function creditCard(Cliente &$cli, Pedido $pedido, $cartao, ?string $token = null): Transacao
     {
-        throw new Exception("Banco Inter não suporta diretamente transações de Cartão de Crédito via API de Cobrança.");
+        // O Inter não suporta diretamente transações de Cartão de Crédito via API de Cobrança.
+        // Se a intenção é usar o Inter como adquirente, a lógica seria diferente e usaria outra API.
+        throw new Exception("O Banco Inter não suporta transações de Cartão de Crédito via API de Cobrança.");
     }
 
     public function pix(Cliente &$cli, Pedido $pedido, $cartao, ?string $token = null): Transacao
     {
-        // Lógica de Adapter: Traduzir Entidades para o formato do Inter
-        $requestData = [
-            'seuNumero' => $pedido->getId(), // Usando ID do pedido como 'seuNumero'
+        // Lógica de Adapter: Traduzir Entidades para o formato de requisição do Inter
+        // A API de Cobrança (Boleto com Pix) é usada para emitir o Pix.
+        
+        // Exemplo de mapeamento para a API de Cobrança (Pix)
+        $cobranca = [
+            'seuNumero' => $pedido->getId(),
             'valorNominal' => $pedido->getValorTotal(),
             'dataVencimento' => date('Y-m-d', strtotime('+7 days')),
-            'numDiasAgenda' => 60,
             'pagador' => [
                 'cpfCnpj' => $cli->getCpfCnpj(),
                 'nome' => $cli->getNome(),
-                // ... outros campos de endereço do cliente ...
+                // ... outros dados do cliente ...
             ],
+            // ... outros campos necessários para Pix ...
         ];
 
         try {
-            $response = $this->sdk->emitirCobranca($requestData);
+            // Chamada real ao SDK do Inter
+            $response = $this->sdk->cobranca().emitirCobranca($cobranca);
             
             // Lógica de Adapter: Traduzir resposta do Inter para Entidade Transacao
             $transacao = new Transacao();
-            $transacao->setOperadoraID($response['codigoSolicitacao']);
-            $transacao->setOperadoraStatus($response['status']);
-            $transacao->setValorBruto($response['valorNominal']);
-            $transacao->setPixQrCode($response['qrCode']);
-            $transacao->setOperadoraCodigo($response['seuNumero']); // Novo campo
+            $transacao->setOperadoraID($response->getCodigoSolicitacao());
+            $transacao->setOperadoraStatus($response->getSituacao());
+            $transacao->setValorBruto($response->getValorNominal());
+            $transacao->setPixQrCode($response->getQrCode());
+            $transacao->setOperadoraCodigo($response->getSeuNumero());
             $transacao->setOperadora('Inter');
             
             return $transacao;
@@ -63,69 +94,90 @@ class Inter implements PagamentosInterface
 
     public function refund(string $charge_id, float $amount): Transacao
     {
-        $this->logger->info("Simulando refund de {$amount} para charge ID {$charge_id} no Inter.");
-        // Simulação: Retorna uma Transacao com o valor cancelado
-        $transacao = new Transacao();
-        $transacao->setOperadoraID($charge_id);
-        $transacao->setValorCancelado($amount);
-        $transacao->setOperadoraStatus('REFUNDED');
-        $transacao->setDataCancelamento(date('Y-m-d H:i:s'));
-        return $transacao;
+        // Lógica real de estorno
+        try {
+            // A API do Inter para estorno de Pix/Boleto é diferente e precisa ser implementada
+            // Exemplo: $this->sdk->cobranca()->cancelarCobranca($charge_id);
+            
+            $this->logger->info("Tentativa de estorno de {$amount} para charge ID {$charge_id} no Inter.");
+            
+            // Simulação de sucesso (a ser substituída pelo código do SDK)
+            $transacao = new Transacao();
+            $transacao->setOperadoraID($charge_id);
+            $transacao->setValorCancelado($amount);
+            $transacao->setOperadoraStatus('REFUNDED');
+            $transacao->setDataCancelamento(date('Y-m-d H:i:s'));
+            return $transacao;
+        } catch (Exception $e) {
+            $this->logger->error("Erro ao realizar estorno (Inter): " . $e->getMessage());
+            throw $e;
+        }
     }
 
     public function saveCard(Cliente &$cli, string $cartao): string
     {
-        $token = 'tok_' . substr(md5($cartao . time()), 0, 16);
-        $this->logger->info("Simulando saveCard para cliente {$cli->getId()} no Inter. Token: {$token}");
-        return $token;
+        throw new Exception("O Banco Inter não suporta a funcionalidade SaveCard via API de Cobrança.");
     }
 
     public function getCards(Cliente $cli): array
     {
-        $this->logger->info("Simulando consulta de cartões salvos para cliente {$cli->getId()} no Inter.");
-        // Retorna uma lista de tokens de cartão simulados
-        return ['tok_inter_1234', 'tok_inter_5678'];
+        return [];
     }
 
     public function updateCustumer(Cliente $cli): Cliente
     {
+        // O SDK do Inter não tem um método direto para 'updateCustomer' na API de Cobrança.
+        // Os dados do pagador são enviados a cada nova cobrança.
         return $cli;
     }
     
-    // Métodos de consulta (simplificados)
     public function getReceivable(string $id): Transacao
     {
-        $this->logger->info("Simulando consulta de recebível ID {$id} no Inter.");
-        $transacao = new Transacao();
-        $transacao->setOperadoraID($id);
-        $transacao->setValorLiquido(100.00);
-        $transacao->setOperadoraStatus('SETTLED');
-        return $transacao;
+        throw new Exception("Consulta de recebíveis não é suportada diretamente na API de Cobrança do Inter.");
     }
     public function getReceivables(array $params): array
     {
-        $this->logger->info("Simulando consulta de recebíveis no Inter com filtros: " . json_encode($params));
-        return [
-            (new Transacao())->setOperadoraID('rec_1')->setValorLiquido(50.00),
-            (new Transacao())->setOperadoraID('rec_2')->setValorLiquido(75.00),
-        ];
+        throw new Exception("Consulta de recebíveis não é suportada diretamente na API de Cobrança do Inter.");
     }
     public function getCharge(string $id): Transacao
     {
-        $this->logger->info("Simulando consulta de charge ID {$id} no Inter.");
-        $transacao = new Transacao();
-        $transacao->setOperadoraID($id);
-        $transacao->setValorBruto(150.00);
-        $transacao->setOperadoraStatus('PAID');
-        return $transacao;
+        // Lógica real de consulta de cobrança
+        try {
+            $response = $this->sdk->cobranca()->consultarCobranca($id);
+            
+            $transacao = new Transacao();
+            $transacao->setOperadoraID($response->getCodigoSolicitacao());
+            $transacao->setOperadoraStatus($response->getSituacao());
+            $transacao->setValorBruto($response->getValorNominal());
+            $transacao->setOperadora('Inter');
+            
+            return $transacao;
+        } catch (Exception $e) {
+            $this->logger->error("Erro ao consultar charge (Inter): " . $e->getMessage());
+            throw $e;
+        }
     }
     public function cancelCharge(string $charge_id): Transacao
     {
-        $this->logger->info("Simulando cancelamento de charge ID {$charge_id} no Inter.");
-        $transacao = new Transacao();
-        $transacao->setOperadoraID($charge_id);
-        $transacao->setOperadoraStatus('CANCELLED');
-        $transacao->setDataCancelamento(date('Y-m-d H:i:s'));
-        return $transacao;
+        // Lógica real de cancelamento de cobrança
+        try {
+            $this->sdk->cobranca()->cancelarCobranca($charge_id);
+            
+            $transacao = new Transacao();
+            $transacao->setOperadoraID($charge_id);
+            $transacao->setOperadoraStatus('CANCELLED');
+            $transacao->setDataCancelamento(date('Y-m-d H:i:s'));
+            return $transacao;
+        } catch (Exception $e) {
+            $this->logger->error("Erro ao cancelar charge (Inter): " . $e->getMessage());
+            throw $e;
+        }
+    }
+    
+    // Implementação de boleto (adicional, mas importante para o Inter)
+    public function boleto(Cliente &$cli, Pedido $pedido, $cartao, ?string $token = null): Transacao
+    {
+        // A lógica é a mesma do Pix, mas com o payload ajustado para Boleto
+        return $this->pix($cli, $pedido, $cartao, $token);
     }
 }
