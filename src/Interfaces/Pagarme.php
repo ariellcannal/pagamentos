@@ -386,7 +386,7 @@ class Pagarme implements PagamentosInterface
         }
     }
 
-    public function creditCard(Cliente &$cli, Pedido $pedido, Cartao|string $cartao): Transacao
+     public function pix(Cliente &$cli, Pedido $pedido, Cartao|string $cartao): Transacaonsacao
     {
         try {
             if (! $this->client) {
@@ -513,6 +513,54 @@ class Pagarme implements PagamentosInterface
     }
 
     public function pix(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        // ... (Implementação existente)
+    }
+
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        if (! $this->client) {
+            $this->getClient();
+        }
+
+        try {
+            $ordersController = $this->client->getOrdersController();
+            $this->getCustumer($cli);
+
+            $boleto = \PagarmeApiSDKLib\Models\Builders\CreateBoletoPaymentRequestBuilder::init()
+                ->dueAt(new \DateTime(date('Y-m-d', strtotime('+7 days'))))
+                ->instructions('Não receber após o vencimento.')
+                ->build();
+
+            $body = CreateOrderRequestBuilder::init([
+                CreateOrderItemRequestBuilder::init($pedido->getValor(), $pedido->getNomeDoItem(), 1, 'oficinas')->code($pedido->getId())
+                    ->build()
+            ], $this->custumer, [
+                CreatePaymentRequestBuilder::init('boleto')->boleto($boleto)->build()
+            ], $pedido->getId(), true, null, false, $_SERVER['REMOTE_ADDR'])->build();
+
+            $this->logger->debug('BOLETO REQUEST:' . PHP_EOL . json_encode($body->jsonSerialize()));
+            $order = $ordersController->createOrder($body);
+            $this->logger->debug('BOLETO RESPONSE:' . PHP_EOL . json_encode($order->jsonSerialize()));
+
+            // Mapeamento da resposta para a Entidade Transacao
+            $transacao = new Transacao();
+            $charge = $order->getCharges()[0];
+            $payment = $charge->getLastTransaction();
+
+            $transacao->setOperadoraID($charge->getId());
+            $transacao->setOperadoraStatus($charge->getStatus());
+            $transacao->setValorBruto($charge->getAmount() / 100);
+            $transacao->setDataExpiracao($payment->getDueAt()->format('Y-m-d H:i:s'));
+            $transacao->setPixQrCode($payment->getQrCode()); // Pagar.me inclui Pix no Boleto
+            $transacao->setOperadoraCodigo($order->getCode());
+            $transacao->setOperadora('Pagarme');
+            
+            return $transacao;
+        } catch (Throwable $e) {
+            $this->handleException($e);
+        }
+    }
     {
         try {
             if (! $this->client) {
@@ -759,7 +807,7 @@ class Pagarme implements PagamentosInterface
         }
     }
 
-    public function getReceivables(string $operadora_id = null, int $parcela_id = null, string $status = null, int $days = null): ?array
+       public function getReceivables(string $charge_id = null, int $parcela_id = null, string $status = null, int $days = null): ?array
     {
         try {
             $chargeId = null;

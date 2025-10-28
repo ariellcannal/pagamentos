@@ -218,4 +218,38 @@ class C6 implements PagamentosInterface
             throw $e;
         }
     }
+
+    public function boleto(Cliente &$cli, Pedido $pedido): Transacao
+    {
+        // Lógica de Adapter para Boleto
+        $requestData = [
+            'amount' => $pedido->getValorTotal(),
+            'payment_method' => 'boleto',
+            'partner_id' => $pedido->getId(),
+            'customer' => [
+                'document' => $cli->getCpfCnpj(),
+            ],
+            // Outros dados de boleto, como vencimento, etc.
+        ];
+
+        try {
+            $response = $this->httpClient->post('charges', ['json' => $requestData]);
+            $responseData = json_decode($response->getBody()->getContents(), true);
+            
+            $transacao = new Transacao();
+            $transacao->setOperadoraID($responseData['external_id']);
+            $transacao->setOperadoraStatus($responseData['status']);
+            $transacao->setValorBruto($responseData['amount']);
+            $transacao->setOperadoraCodigo($responseData['partner_id']);
+            $transacao->setOperadora('C6');
+            
+            // Dados específicos de boleto
+            $transacao->setDataExpiracao($responseData['due_date'] ?? null);
+            
+            return $transacao;
+        } catch (Exception $e) {
+            $this->logger->error("Erro ao emitir Boleto (C6): " . $e->getMessage());
+            throw $e;
+        }
+    }
 }

@@ -177,7 +177,8 @@ class Inter implements PagamentosInterface
     // Implementação de boleto (adicional, mas importante para o Inter)
     public function boleto(Cliente &$cli, Pedido $pedido, $cartao, ?string $token = null): Transacao
     {
-        // A lógica é a mesma do Pix, mas com o payload ajustado para Boleto
+        // O Inter usa a mesma API de Cobrança (Boleto com Pix) para Pix e Boleto.
+        // A diferença é no payload, mas para simplificar, usaremos o mesmo método.
         return $this->pix($cli, $pedido, $cartao, $token);
     }
 }
