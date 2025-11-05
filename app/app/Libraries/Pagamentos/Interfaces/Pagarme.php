@@ -1,14 +1,14 @@
 <?php
-namespace CANNALPagamentos\Interfaces;
+namespace App\Libraries\Pagamentos\Interfaces;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use CANNALPagamentos\Entities\Cartao;
-use CANNALPagamentos\Entities\Pedido;
-use CANNALPagamentos\Entities\Cliente;
-use CANNALPagamentos\Entities\Recebivel;
-use CANNALPagamentos\Entities\Transacao;
-use CANNALPagamentos\PagamentosInterface;
+use App\Libraries\Pagamentos\Entities\Cartao;
+use App\Libraries\Pagamentos\Entities\Pedido;
+use App\Libraries\Pagamentos\Entities\Cliente;
+use App\Libraries\Pagamentos\Entities\Recebivel;
+use App\Libraries\Pagamentos\Entities\Transacao;
+use App\Libraries\Pagamentos\PagamentosInterface;
 use PagarmeApiSDKLib\PagarmeApiSDKClient;
 use PagarmeApiSDKLib\PagarmeApiSDKClientBuilder;
 use PagarmeApiSDKLib\Authentication\BasicAuthCredentialsBuilder;
