@@ -1,12 +1,12 @@
 <?php
 
-namespace CANNALPagamentos\Interfaces;
+namespace App\Libraries\Pagamentos\Interfaces;
 
-use CANNALPagamentos\PagamentosInterface;
-use CANNALPagamentos\Entities\Cliente;
-use CANNALPagamentos\Entities\Pedido;
-use CANNALPagamentos\Entities\Transacao;
-use CANNALPagamentos\Entities\Recebivel;
+use App\Libraries\Pagamentos\PagamentosInterface;
+use App\Libraries\Pagamentos\Entities\Cliente;
+use App\Libraries\Pagamentos\Entities\Pedido;
+use App\Libraries\Pagamentos\Entities\Transacao;
+use App\Libraries\Pagamentos\Entities\Recebivel;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;

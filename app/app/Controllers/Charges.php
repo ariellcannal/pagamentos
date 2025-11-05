@@ -92,7 +92,7 @@ protected $logger;
 
         $rules = [
             "bank_type" => "required|in_list[pagarme,inter,c6]",
-            "charge_type" => "required|in_list[boleto,pix]", // Removido 'credit_card' pois não está implementado o fluxo completo
+            "charge_type" => "required|in_list[boleto,pix,credit_card]",
             "amount" => "required|numeric|greater_than[0]",
             "customer_name" => "required|string|max_length[255]",
             "customer_email" => "required|valid_email",
