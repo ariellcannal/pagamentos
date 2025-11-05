@@ -24,6 +24,13 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('/api-keys', 'ApiKeys::index');
     $routes->post('/api-keys/create', 'ApiKeys::create');
     $routes->delete('/api-keys/delete/(:num)', 'ApiKeys::delete/$1');
+    $routes->get('/email-templates', 'EmailTemplates::index');
+    $routes->post('/email-templates/create', 'EmailTemplates::create');
+    $routes->get('/email-templates/edit/(:num)', 'EmailTemplates::edit/$1');
+    $routes->post('/email-templates/update/(:num)', 'EmailTemplates::update/$1');
+    $routes->get('/email-templates/toggle/(:num)', 'EmailTemplates::toggle/$1');
+    $routes->post('/email-templates/send-test/(:num)', 'EmailTemplates::sendTest/$1');
+    $routes->get('/api-keys/documentation', 'ApiKeys::documentation');
 });
 
 // Rotas de Webhooks (sem autenticação, mas com validação de assinatura)
