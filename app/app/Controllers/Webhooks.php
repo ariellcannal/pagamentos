@@ -7,6 +7,10 @@ use App\Models\User;
 use App\Models\WebhookLog;
 use App\Models\ApiKey;
 use CodeIgniter\Controller;
+use App\Libraries\Pagamentos\Webhooks\PagarmeWebhookProcessor;
+use App\Libraries\Pagamentos\Webhooks\InterWebhookProcessor;
+use App\Libraries\Pagamentos\Webhooks\C6WebhookProcessor;
+use CodeIgniter\Log\Logger;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
@@ -18,6 +22,7 @@ class Webhooks extends Controller
     protected $userModel;
     protected $webhookLogModel;
     protected $apiKeyModel;
+    protected $logger;
 
     public function __construct()
     {
@@ -25,6 +30,7 @@ class Webhooks extends Controller
         $this->userModel = new User();
         $this->webhookLogModel = new WebhookLog();
         $this->apiKeyModel = new ApiKey();
+        $this->logger = \Config\Services::logger();
     }
 
     /**
@@ -34,6 +40,12 @@ class Webhooks extends Controller
      * @return ResponseInterface
      */
     public function pagarme(string $username)
+    {
+        // Adicionar validação de assinatura do Pagar.me aqui
+        // $signature = $this->request->getHeaderLine('X-Hub-Signature');
+        // if (!PagarmeWebhookProcessor::validateSignature($payload, $signature, $user['pagarme_webhook_key'])) {
+        //     return $this->response->setStatusCode(401)->setJSON(['error' => 'Assinatura inválida']);
+        // }
     {
         $user = $this->userModel->where('username', $username)->first();
 
@@ -222,8 +234,8 @@ class Webhooks extends Controller
      */
     private function processPagarmeWebhook(int $userId, array $payload): void
     {
-        // Implementar a lógica de processamento do webhook do Pagar.me
-        // Exemplo: atualizar o status da cobrança baseado no evento recebido
+        $processor = new PagarmeWebhookProcessor($this->chargeModel, $this->logger);
+        $processor->process($userId, $payload);
     }
 
     /**
@@ -235,7 +247,8 @@ class Webhooks extends Controller
      */
     private function processInterWebhook(int $userId, array $payload): void
     {
-        // Implementar a lógica de processamento do webhook do Inter
+        $processor = new InterWebhookProcessor($this->chargeModel, $this->logger);
+        $processor->process($userId, $payload);
     }
 
     /**
@@ -247,7 +260,11 @@ class Webhooks extends Controller
      */
     private function processBlingWebhook(int $userId, array $payload): void
     {
-        // Implementar a lógica de processamento do webhook do Bling
+        // A lógica do Bling é diferente, pois não é um gateway de pagamento.
+        // O Bling é para sincronização de contas a receber.
+        // A implementação deve ser feita em um Service ou Model específico.
+        // Por enquanto, manteremos o log e o sucesso.
+        // TODO: Implementar BlingService para processar o webhook do Bling.
     }
 
     /**
@@ -262,6 +279,7 @@ class Webhooks extends Controller
     {
         // Implementar a lógica de processamento do webhook customizado
         // Enviar os dados para a URL configurada no webhook
+        // TODO: Implementar um serviço para enviar o payload para a URL configurada na API Key.
     }
 }
 

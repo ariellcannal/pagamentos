@@ -5,6 +5,10 @@ namespace App\Controllers;
 use App\Models\User;
 use App\Models\UserConfiguration;
 use CodeIgniter\Controller;
+use CodeIgniter\Log\Logger;
+use App\Libraries\Pagamentos\Interfaces\Pagarme;
+use App\Libraries\Pagamentos\Interfaces\Inter;
+use App\Libraries\Pagamentos\Interfaces\C6;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
@@ -15,12 +19,14 @@ class Settings extends Controller
     protected $userModel;
     protected $userConfigModel;
     protected $session;
+    protected $logger;
 
     public function __construct()
     {
         $this->userModel = new User();
         $this->userConfigModel = new UserConfiguration();
         $this->session = session();
+        $this->logger = \Config\Services::logger();
     }
 
     /**
@@ -64,6 +70,7 @@ class Settings extends Controller
             'inter_certificate_path' => 'permit_empty|string',
             'inter_certificate_password' => 'permit_empty|string',
             'c6_api_key' => 'permit_empty|string',
+            'c6_api_secret' => 'permit_empty|string',
             'bling_api_key' => 'permit_empty|string',
             'bling_webhook_url' => 'permit_empty|valid_url',
         ];
@@ -89,6 +96,7 @@ class Settings extends Controller
             'inter_certificate_path' => $this->request->getPost('inter_certificate_path'),
             'inter_certificate_password' => $this->request->getPost('inter_certificate_password'),
             'c6_api_key' => $this->request->getPost('c6_api_key'),
+            'c6_api_secret' => $this->request->getPost('c6_api_secret'),
             'bling_api_key' => $this->request->getPost('bling_api_key'),
             'bling_webhook_url' => $this->request->getPost('bling_webhook_url'),
         ];
@@ -134,7 +142,8 @@ class Settings extends Controller
                         throw new \Exception('Chave de API do Pagar.me não configurada');
                     }
                     // Teste simples de conexão
-                    $gateway = new \CANNALPagamentos\Interfaces\Pagarme($config['pagarme_api_key']);
+                    $gateway = new Pagarme($config['pagarme_api_key'], $this->logger);
+                    // TODO: Implementar um método de teste no Pagarme que não crie cobrança
                     return $this->response->setStatusCode(200)->setJSON(['success' => true, 'message' => 'Conexão com Pagar.me bem-sucedida!']);
 
                 case 'inter':
@@ -142,20 +151,23 @@ class Settings extends Controller
                         throw new \Exception('Credenciais do Banco Inter não configuradas');
                     }
                     // Teste simples de conexão
-                    $gateway = new \CANNALPagamentos\Interfaces\Inter(
+                    $gateway = new Inter(
                         $config['inter_client_id'],
                         $config['inter_client_secret'],
                         $config['inter_certificate_path'],
-                        $config['inter_certificate_password']
+                        $config['inter_certificate_password'],
+                        $this->logger
                     );
+                    // TODO: Implementar um método de teste no Inter que não crie cobrança
                     return $this->response->setStatusCode(200)->setJSON(['success' => true, 'message' => 'Conexão com Banco Inter bem-sucedida!']);
 
                 case 'c6':
-                    if (!$config['c6_api_key']) {
-                        throw new \Exception('Chave de API do C6 Bank não configurada');
+                    if (!$config['c6_api_key'] || !$config['c6_api_secret']) {
+                        throw new \Exception('Credenciais do C6 Bank não configuradas');
                     }
                     // Teste simples de conexão
-                    $gateway = new \CANNALPagamentos\Interfaces\C6($config['c6_api_key']);
+                    $gateway = new C6($config['c6_api_key'], $config['c6_api_secret'], $this->logger);
+                    // TODO: Implementar um método de teste no C6 que não crie cobrança
                     return $this->response->setStatusCode(200)->setJSON(['success' => true, 'message' => 'Conexão com C6 Bank bem-sucedida!']);
 
                 default:

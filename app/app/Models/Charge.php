@@ -14,6 +14,7 @@ class Charge extends Model
     protected $useAutoIncrement = true;
     protected $returnType = 'array';
     protected $useSoftDeletes = false;
+    protected $protectFields = true;
     protected $allowedFields = [
         'user_id',
         'bank_type',
@@ -40,8 +41,27 @@ class Charge extends Model
     protected $updatedField = 'updated_at';
     protected $dateFormat = 'datetime';
 
+    // Validation
+    protected $validationRules = [
+        'user_id' => 'required|integer',
+        'bank_type' => 'required|in_list[pagarme,inter,c6]',
+        'charge_type' => 'required|in_list[boleto,pix,credit_card]',
+        'amount' => 'required|numeric|greater_than[0]',
+        'status' => 'required|in_list[pending,paid,overdue,canceled]',
+    ];
+    protected $validationMessages = [];
+    protected $skipValidation = false;
+    protected $cleanValidationRules = true;
+
+    // Callbacks
+    protected $allowCallbacks = true;
+    protected $beforeInsert = [];
+    protected $afterInsert = [];
+    protected $beforeUpdate = [];
+    protected $afterUpdate = [];
+
     /**
-     * Obtém as cobranças de um usuário.
+     * Obtém as cobranças de um usuário com paginação.
      *
      * @param int $userId
      * @param int $limit
@@ -52,12 +72,11 @@ class Charge extends Model
     {
         return $this->where('user_id', $userId)
                     ->orderBy('created_at', 'DESC')
-                    ->limit($limit, $offset)
-                    ->findAll();
+                    ->findAll($limit, $offset);
     }
 
     /**
-     * Obtém uma cobrança pelo ID.
+     * Obtém uma cobrança pelo ID e ID do usuário.
      *
      * @param int $chargeId
      * @param int $userId

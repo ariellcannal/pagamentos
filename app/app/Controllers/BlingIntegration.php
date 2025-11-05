@@ -8,6 +8,7 @@ use App\Models\UserConfiguration;
 use App\Models\BlingSync;
 use App\Services\BlingService;
 use CodeIgniter\Controller;
+use CodeIgniter\Log\Logger;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
@@ -20,6 +21,7 @@ class BlingIntegration extends Controller
     protected $userConfigModel;
     protected $blingSyncModel;
     protected $session;
+    protected $logger;
 
     public function __construct()
     {
@@ -28,6 +30,7 @@ class BlingIntegration extends Controller
         $this->userConfigModel = new UserConfiguration();
         $this->blingSyncModel = new BlingSync();
         $this->session = session();
+        $this->logger = \Config\Services::logger();
     }
 
     /**
@@ -70,13 +73,13 @@ class BlingIntegration extends Controller
         $userId = $this->session->get('user_id');
         $config = $this->userConfigModel->getByUserId($userId);
 
-        if (!$config || empty($config['bling_api_key'])) {
-            return $this->response->setStatusCode(400)->setJSON(['error' => 'Chave de API do Bling não configurada']);
+        $blingService = $this->getBlingService($userId);
+
+        if (!$blingService) {
+            return $this->response->setStatusCode(400)->setJSON(["error" => "Chave de API do Bling não configurada"]);
         }
 
         try {
-            $blingService = new BlingService($config['bling_api_key']);
-
             if ($blingService->testConnection()) {
                 return $this->response->setStatusCode(200)->setJSON(['success' => true, 'message' => 'Conexão com Bling bem-sucedida!']);
             } else {
@@ -162,12 +165,13 @@ class BlingIntegration extends Controller
         $userId = $this->session->get('user_id');
         $config = $this->userConfigModel->getByUserId($userId);
 
-        if (!$config || empty($config['bling_api_key'])) {
-            return redirect()->back()->with('error', 'Bling não está configurado.');
+        $blingService = $this->getBlingService($userId);
+
+        if (!$blingService) {
+            return redirect()->back()->with("error", "Bling não está configurado.");
         }
 
         try {
-            $blingService = new BlingService($config['bling_api_key']);
 
             // Obter cobranças não sincronizadas
             $charges = $this->chargeModel->where('user_id', $userId)
@@ -289,7 +293,30 @@ class BlingIntegration extends Controller
             $message = "Importação concluída: $importedCount importado(s), $skippedCount ignorado(s).";
             return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erro ao importar: ' . $e->getMessage());
+            $this->logger->error("Erro ao importar contas a receber do Bling: " . $e->getMessage());
+            return redirect()->back()->with("error", "Erro ao importar: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Método auxiliar para obter a instância do BlingService.
+     *
+     * @param int $userId
+     * @return BlingService|null
+     */
+    private function getBlingService(int $userId): ?BlingService
+    {
+        $config = $this->userConfigModel->getByUserId($userId);
+
+        if (!$config || empty($config["bling_api_key"])) {
+            return null;
+        }
+
+        try {
+            return new BlingService($config["bling_api_key"], $this->logger);
+        } catch (\Exception $e) {
+            $this->logger->error("Erro ao instanciar BlingService: " . $e->getMessage());
+            return null;
         }
     }
 

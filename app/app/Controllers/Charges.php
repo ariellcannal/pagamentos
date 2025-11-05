@@ -4,8 +4,12 @@ namespace App\Controllers;
 
 use App\Models\Charge;
 use App\Models\UserConfiguration;
-use CANNALPagamentos\Entities\Cliente;
-use CANNALPagamentos\Entities\Pedido;
+use App\Libraries\Pagamentos\Entities\Cliente;
+use App\Libraries\Pagamentos\Interfaces\Pagarme;
+use App\Libraries\Pagamentos\Interfaces\Inter;
+use App\Libraries\Pagamentos\Interfaces\C6;
+use CodeIgniter\Log\Logger;
+use App\Libraries\Pagamentos\Entities\Pedido;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\ResponseInterface;
 
@@ -17,12 +21,14 @@ class Charges extends Controller
     protected $chargeModel;
     protected $userConfigModel;
     protected $session;
+protected $logger;
 
     public function __construct()
     {
         $this->chargeModel = new Charge();
         $this->userConfigModel = new UserConfiguration();
         $this->session = session();
+        $this->logger = \Config\Services::logger();
     }
 
     /**
@@ -32,23 +38,23 @@ class Charges extends Controller
      */
     public function index()
     {
-        $userId = $this->session->get('user_id');
-        $page = $this->request->getVar('page') ?? 1;
+        $userId = $this->session->get("user_id");
+        $page = $this->request->getVar("page") ?? 1;
         $limit = 20;
         $offset = ($page - 1) * $limit;
 
         $charges = $this->chargeModel->getByUserId($userId, $limit, $offset);
-        $totalCharges = $this->chargeModel->where('user_id', $userId)->countAllResults();
+        $totalCharges = $this->chargeModel->where("user_id", $userId)->countAllResults();
 
         $data = [
-            'title' => 'Cobranças',
-            'charges' => $charges,
-            'total_charges' => $totalCharges,
-            'current_page' => $page,
-            'total_pages' => ceil($totalCharges / $limit),
+            "title" => "Cobranças",
+            "charges" => $charges,
+            "total_charges" => $totalCharges,
+            "current_page" => $page,
+            "total_pages" => ceil($totalCharges / $limit),
         ];
 
-        return view('charges/index', $data);
+        return view("charges/index", $data);
     }
 
     /**
@@ -58,23 +64,21 @@ class Charges extends Controller
      */
     public function create()
     {
-        if ($this->request->getMethod() === 'post') {
+        if ($this->request->getMethod() === "post") {
             return $this->processCreate();
         }
 
         $data = [
-            'title' => 'Criar Cobrança',
-            'banks' => ['pagarme' => 'Pagar.me', 'inter' => 'Banco Inter', 'c6' => 'C6 Bank'],
-            'charge_types' => [
-                'boleto' => 'Boleto',
-                'pix' => 'Pix',
-                'credit_card' => 'Cartão de Crédito',
-                'debit_card' => 'Cartão de Débito',
-                'payment_link' => 'Link de Pagamento',
+            "title" => "Criar Cobrança",
+            "banks" => ["pagarme" => "Pagar.me", "inter" => "Banco Inter", "c6" => "C6 Bank"],
+            "charge_types" => [
+                "boleto" => "Boleto",
+                "pix" => "Pix",
+                "credit_card" => "Cartão de Crédito",
             ],
         ];
 
-        return view('charges/create', $data);
+        return view("charges/create", $data);
     }
 
     /**
@@ -84,80 +88,68 @@ class Charges extends Controller
      */
     private function processCreate()
     {
-        $userId = $this->session->get('user_id');
+        $userId = $this->session->get("user_id");
 
-        // Validação dos dados
         $rules = [
-            'bank_type' => 'required|in_list[pagarme,inter,c6]',
-            'charge_type' => 'required|in_list[boleto,pix,credit_card,debit_card,payment_link]',
-            'amount' => 'required|numeric|greater_than[0]',
-            'customer_name' => 'required|string|max_length[255]',
-            'customer_email' => 'required|valid_email',
-            'customer_document' => 'required|string|max_length[20]',
-            'due_date' => 'required|valid_date',
-            'description' => 'permit_empty|string',
+            "bank_type" => "required|in_list[pagarme,inter,c6]",
+            "charge_type" => "required|in_list[boleto,pix]", // Removido 'credit_card' pois não está implementado o fluxo completo
+            "amount" => "required|numeric|greater_than[0]",
+            "customer_name" => "required|string|max_length[255]",
+            "customer_email" => "required|valid_email",
+            "customer_document" => "required|string|max_length[20]",
+            "due_date" => "required|valid_date",
+            "description" => "permit_empty|string",
         ];
 
         if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with("errors", $this->validator->getErrors());
         }
 
         $data = $this->request->getPost();
-        $data['user_id'] = $userId;
-        $data['status'] = 'pending';
-        $data['origin'] = 'manual';
+        $data["user_id"] = $userId;
+        $data["status"] = "pending";
+        $data["origin"] = "manual";
 
-        // Instanciar o gateway de pagamento
-        $gateway = $this->getGateway($data['bank_type'], $userId);
+        $gateway = $this->getGateway($data["bank_type"], $userId);
 
         if (!$gateway) {
-            return redirect()->back()->with('error', 'Configuração de banco não encontrada.');
+            return redirect()->back()->with("error", "Configuração de banco não encontrada.");
         }
 
         try {
-            // Criar cliente
             $cliente = new Cliente();
-            $cliente->setNome($data['customer_name'])
-                    ->setEmail($data['customer_email'])
-                    ->setDocumento($data['customer_document']);
+            $cliente->setNome($data["customer_name"])
+                    ->setEmail($data["customer_email"])
+                    ->setDocumento($data["customer_document"]);
 
-            // Criar pedido
             $pedido = new Pedido();
-            $pedido->setId($data['customer_document'])
-                   ->setValor($data['amount'])
-                   ->setNomeDoItem($data['description'] ?? 'Cobrança')
-                   ->setDataVencimento(new \DateTime($data['due_date']));
+            $pedido->setId(uniqid("charge_"))
+                   ->setValor($data["amount"])
+                   ->setNomeDoItem($data["description"] ?? "Cobrança")
+                   ->setDataVencimento(new \DateTime($data["due_date"]));
 
-            // Chamar o método apropriado do gateway
-            $methodName = $data['charge_type'];
+            $methodName = $data["charge_type"];
             if (method_exists($gateway, $methodName)) {
                 $transacao = $gateway->$methodName($cliente, $pedido);
 
-                // Salvar a cobrança no banco de dados
-                $data['bank_charge_id'] = $transacao->getOperadoraID();
-                $data['pix_qr_code'] = $transacao->getPixQrCode();
-                $data['boleto_barcode'] = $transacao->getPixQrCode(); // Usar o mesmo campo para boleto
-                $data['bank_response'] = json_encode($transacao);
+                $data["bank_charge_id"] = $transacao->getOperadoraID();
+                $data["pix_qr_code"] = $transacao->getPixQrCode();
+                $data["boleto_barcode"] = $transacao->getBoletoBarcode();
+                $data["boleto_url"] = $transacao->getBoletoUrl(); // Adicionando referência correta para URL do boleto
+                $data["bank_response"] = json_encode($transacao);
 
                 $this->chargeModel->insert($data);
 
-                return redirect()->to('/charges')->with('success', 'Cobrança criada com sucesso!');
+                return redirect()->to("/charges")->with("success", "Cobrança criada com sucesso!");
             } else {
-                return redirect()->back()->with('error', 'Método de cobrança não suportado pelo gateway.');
+                return redirect()->back()->with("error", "Método de cobrança não suportado pelo gateway.");
             }
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erro ao criar cobrança: ' . $e->getMessage());
+            return redirect()->back()->with("error", "Erro ao criar cobrança: " . $e->getMessage());
         }
     }
 
-    /**
-     * Obtém a instância do gateway de pagamento.
-     *
-     * @param string $bankType
-     * @param int $userId
-     * @return object|null
-     */
-    private function getGateway(string $bankType, int $userId)
+    private function getGateway(string $bankType, int $userId): ?object
     {
         $config = $this->userConfigModel->getByUserId($userId);
 
@@ -167,51 +159,49 @@ class Charges extends Controller
 
         try {
             switch ($bankType) {
-                case 'pagarme':
-                    return new \CANNALPagamentos\Interfaces\Pagarme(
-                        $config['pagarme_api_key'],
-                        null
+                case "pagarme":
+                    return new Pagarme(
+                        $config["pagarme_api_key"],
+                        $this->logger
                     );
-                case 'inter':
-                    return new \CANNALPagamentos\Interfaces\Inter(
-                        $config['inter_client_id'],
-                        $config['inter_client_secret'],
-                        $config['inter_certificate_path'],
-                        $config['inter_certificate_password']
+                case "inter":
+                    return new Inter(
+                        $config["inter_client_id"],
+                        $config["inter_client_secret"],
+                        $config["inter_certificate_path"],
+                        $config["inter_certificate_password"],
+                        $this->logger
                     );
-                case 'c6':
-                    return new \CANNALPagamentos\Interfaces\C6(
-                        $config['c6_api_key']
+                case "c6":
+                    return new C6(
+                        $config["c6_api_key"],
+                        $config["c6_api_secret"],
+                        $this->logger
                     );
                 default:
                     return null;
             }
         } catch (\Exception $e) {
+            $this->logger->error("Erro ao instanciar gateway: " . $e->getMessage());
             return null;
         }
     }
 
-    /**
-     * Exibe os detalhes de uma cobrança.
-     *
-     * @param int $chargeId
-     * @return string|ResponseInterface
-     */
     public function view(int $chargeId)
     {
-        $userId = $this->session->get('user_id');
+        $userId = $this->session->get("user_id");
         $charge = $this->chargeModel->getChargeById($chargeId, $userId);
 
         if (!$charge) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException('Cobrança não encontrada.');
+            throw new \CodeIgniter\Exceptions\PageNotFoundException("Cobrança não encontrada.");
         }
 
         $data = [
-            'title' => 'Detalhes da Cobrança',
-            'charge' => $charge,
+            "title" => "Detalhes da Cobrança",
+            "charge" => $charge,
         ];
 
-        return view('charges/view', $data);
+        return view("charges/view", $data);
     }
 }
 

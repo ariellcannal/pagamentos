@@ -4,6 +4,7 @@ namespace App\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use CodeIgniter\Log\Logger;
 
 /**
  * Serviço para integração com Bling API.
@@ -12,11 +13,13 @@ class BlingService
 {
     protected $apiKey;
     protected $client;
+    protected $logger;
     protected const BASE_URL = 'https://api.bling.com.br/B8/api/v3';
 
-    public function __construct(string $apiKey)
+    public function __construct(string $apiKey, Logger $logger)
     {
         $this->apiKey = $apiKey;
+        $this->logger = $logger;
         $this->client = new Client([
             'base_uri' => self::BASE_URL,
             'headers' => [
@@ -42,6 +45,7 @@ class BlingService
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
+            $this->logger->error('BlingService: Erro ao criar NFe: ' . $e->getMessage());
             throw new \Exception('Erro ao criar NFe no Bling: ' . $e->getMessage());
         }
     }
@@ -62,6 +66,7 @@ class BlingService
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
+            $this->logger->error('BlingService: Erro ao criar pedido: ' . $e->getMessage());
             throw new \Exception('Erro ao criar pedido no Bling: ' . $e->getMessage());
         }
     }
@@ -83,6 +88,7 @@ class BlingService
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
+            $this->logger->error('BlingService: Erro ao atualizar pedido: ' . $e->getMessage());
             throw new \Exception('Erro ao atualizar pedido no Bling: ' . $e->getMessage());
         }
     }
@@ -101,6 +107,7 @@ class BlingService
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
+            $this->logger->error('BlingService: Erro ao obter pedido: ' . $e->getMessage());
             throw new \Exception('Erro ao obter pedido do Bling: ' . $e->getMessage());
         }
     }
@@ -121,6 +128,7 @@ class BlingService
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
+            $this->logger->error('BlingService: Erro ao listar pedidos: ' . $e->getMessage());
             throw new \Exception('Erro ao listar pedidos do Bling: ' . $e->getMessage());
         }
     }
@@ -141,6 +149,7 @@ class BlingService
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
+            $this->logger->error('BlingService: Erro ao criar conta a receber: ' . $e->getMessage());
             throw new \Exception('Erro ao criar conta a receber no Bling: ' . $e->getMessage());
         }
     }
@@ -162,6 +171,7 @@ class BlingService
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
+            $this->logger->error('BlingService: Erro ao atualizar conta a receber: ' . $e->getMessage());
             throw new \Exception('Erro ao atualizar conta a receber no Bling: ' . $e->getMessage());
         }
     }
@@ -180,6 +190,7 @@ class BlingService
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
+            $this->logger->error('BlingService: Erro ao obter conta a receber: ' . $e->getMessage());
             throw new \Exception('Erro ao obter conta a receber do Bling: ' . $e->getMessage());
         }
     }
@@ -200,6 +211,7 @@ class BlingService
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
+            $this->logger->error('BlingService: Erro ao listar contas a receber: ' . $e->getMessage());
             throw new \Exception('Erro ao listar contas a receber do Bling: ' . $e->getMessage());
         }
     }
@@ -220,6 +232,7 @@ class BlingService
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
+            $this->logger->error('BlingService: Erro ao criar contato: ' . $e->getMessage());
             throw new \Exception('Erro ao criar contato no Bling: ' . $e->getMessage());
         }
     }
@@ -238,6 +251,7 @@ class BlingService
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
+            $this->logger->error('BlingService: Erro ao obter contato: ' . $e->getMessage());
             throw new \Exception('Erro ao obter contato do Bling: ' . $e->getMessage());
         }
     }
@@ -258,6 +272,7 @@ class BlingService
 
             return json_decode($response->getBody()->getContents(), true);
         } catch (GuzzleException $e) {
+            $this->logger->error('BlingService: Erro ao listar contatos: ' . $e->getMessage());
             throw new \Exception('Erro ao listar contatos do Bling: ' . $e->getMessage());
         }
     }
@@ -273,6 +288,7 @@ class BlingService
             $this->listContacts(['limit' => 1]);
             return true;
         } catch (\Exception $e) {
+            $this->logger->error('BlingService: Erro ao testar conexão: ' . $e->getMessage());
             return false;
         }
     }
