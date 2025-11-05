@@ -31,6 +31,12 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('/email-templates/toggle/(:num)', 'EmailTemplates::toggle/$1');
     $routes->post('/email-templates/send-test/(:num)', 'EmailTemplates::sendTest/$1');
     $routes->get('/api-keys/documentation', 'ApiKeys::documentation');
+    $routes->get('/bling-integration', 'BlingIntegration::index');
+    $routes->post('/bling-integration/test-connection', 'BlingIntegration::testConnection');
+    $routes->post('/bling-integration/sync-charge/(:num)', 'BlingIntegration::syncCharge/$1');
+    $routes->get('/bling-integration/sync-all', 'BlingIntegration::syncAllCharges');
+    $routes->get('/bling-integration/import-receivables', 'BlingIntegration::importReceivables');
+    $routes->get('/bling-integration/sync-history', 'BlingIntegration::syncHistory');
 });
 
 // Rotas de Webhooks (sem autenticação, mas com validação de assinatura)
