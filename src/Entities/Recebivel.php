@@ -1,7 +1,7 @@
 <?php
 namespace CANNALPagamentos\Entities;
 
-class Recebivel extends _EntityBase
+class Recebivel extends AbstractEntity
 {
 
     protected ?int $id = null;

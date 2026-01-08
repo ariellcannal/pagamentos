@@ -1,7 +1,7 @@
 <?php
 namespace CANNALPagamentos\Entities;
 
-class Cliente extends _EntityBase
+class Cliente extends AbstractEntity
 {
 
     protected int $id = 0;

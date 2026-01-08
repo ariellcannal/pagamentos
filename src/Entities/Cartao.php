@@ -1,7 +1,7 @@
 <?php
 namespace CANNALPagamentos\Entities;
 
-class Cartao extends _EntityBase
+class Cartao extends AbstractEntity
 {
 
     protected string $numero;

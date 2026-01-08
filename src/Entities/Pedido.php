@@ -1,7 +1,7 @@
 <?php
 namespace CANNALPagamentos\Entities;
 
-class Pedido extends _EntityBase
+class Pedido extends AbstractEntity
 {
 
     protected string $id;
