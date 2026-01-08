@@ -566,8 +566,6 @@ class Transacao extends AbstractEntity
         $this->criacao = $criacao;
         return $this;
     }
-}
-
 
     /**
      * Get the value of operadoraCodigo
@@ -590,3 +588,4 @@ class Transacao extends AbstractEntity
         $this->operadoraCodigo = $operadoraCodigo;
         return $this;
     }
+}
