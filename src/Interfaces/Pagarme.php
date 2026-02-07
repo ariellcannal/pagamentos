@@ -729,9 +729,11 @@ class Pagarme implements PagamentosInterface
                     }
                     foreach ($payables as $payable) {
                         if ($payable->getType() == 'credit') {
-                            $rec->setValor($rec->getValor() + ($payable->getAmount() / 100))
-                                ->setDataTransacao($payable->getCreatedAt()
-                                ->format('Y-m-d'));
+                            $rec->setValor($rec->getValor() + ($payable->getAmount() / 100));
+                            if ($payable->getCreatedAt()) {
+                                $rec->setDataTransacao($payable->getCreatedAt()
+                                    ->format('Y-m-d'));
+                            }
                         } else if ($payable->getType() == 'refund') {
                             $rec->setEstornoValor(($payable->getAmount() / 100) * - 1)
                                 ->setEstornoData($payable->getCreatedAt()
