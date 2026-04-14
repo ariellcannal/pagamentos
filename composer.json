@@ -16,7 +16,7 @@
   "require": {
     "php": ">=8.1",
     "psr/log": "^3.0",
-    "ariellcannal/pagarme-php-sdk" : "dev-master",
+    "ariellcannal/pagarme-php-sdk" : "master",
     "guzzlehttp/guzzle": "^7.0"
   },
   "autoload": {
