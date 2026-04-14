@@ -11,7 +11,7 @@
     {
       "type": "git",
       "url": "https://github.com/ariellcannal/pagarme-php-sdk.git",
-      "name": "pagarme"
+      "name": "pagarme-php-sdk"
     }
   ],
   "require": {
