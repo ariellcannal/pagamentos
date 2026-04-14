@@ -9,9 +9,8 @@
       "url": "https://github.com/inter-co/pj-sdk-php"
     },
     {
-      "type": "git",
-      "url": "https://github.com/ariellcannal/pagarme-php-sdk.git",
-      "name": "pagarme-php-sdk"
+      "type": "vcs",
+      "url": "https://github.com/ariellcannal/pagarme-php-sdk.git"
     }
   ],
   "require": {
