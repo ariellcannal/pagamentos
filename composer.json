@@ -11,13 +11,13 @@
     {
       "type": "git",
       "url": "https://github.com/ariellcannal/pagarme-php-sdk.git",
-      "name": "pagarme"
+      "name": "pagarme-php-sdk"
     }
   ],
   "require": {
     "php": ">=8.1",
     "psr/log": "^3.0",
-    "ariellcannal/pagarme" : "master",
+    "ariellcannal/pagarme-php-sdk" : "master",
     "guzzlehttp/guzzle": "^7.0"
   },
   "autoload": {
