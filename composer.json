@@ -1,24 +1,30 @@
 {
-	"description" : "CANNAL - Pagamentos",
-	"name" : "ariellcannal/pagamentos",
-	"type" : "project",
-	"license" : "MIT",
-	"repositories" : [{
-			"type" : "vcs",
-			"url" : "https://github.com/inter-co/pj-sdk-php"
-		}
-	],
-	"require" : {
-		"php" : ">=8.1",
-		"psr/log" : "^3.0",
-		"pagarme/pagarme-php-sdk" : "~6.8",
-		"guzzlehttp/guzzle" : "^7.0"
-	},
-	"autoload" : {
-		"psr-4" : {
-			"CANNALPagamentos\\" : "src/"
-		}
-	},
-	"minimum-stability" : "dev",
-	"prefer-stable" : true
+  "description": "CANNAL - Pagamentos",
+  "name": "ariellcannal/pagamentos",
+  "type": "project",
+  "license": "MIT",
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/inter-co/pj-sdk-php"
+    },
+    {
+      "type": "git",
+      "url": "https://github.com/ariellcannal/pagarme-php-sdk.git",
+      "name": "pagarme"
+    }
+  ],
+  "require": {
+    "php": ">=8.1",
+    "psr/log": "^3.0",
+    "ariellcannal/pagarme" : "master",
+    "guzzlehttp/guzzle": "^7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "CANNALPagamentos\\": "src/"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
