@@ -4,7 +4,7 @@ Para proceder com a implementação, preciso entender suas preferências e restr
 
 ---
 
-## 1️⃣ PADRÃO DE CONSTRUTOR
+## 1️⃣ PADRÃO DE CONSTRUTOR 
 
 ### Opção A: Factory Pattern Puro (Recomendado)
 ```php
@@ -237,7 +237,7 @@ Qual banco testar primeiro em detalhes?
 ```
 
 **QUAL ORDEM? Pagarme → Asaas → C6 → Inter?**
-Pagarme → Asaas → C6 → Inter
+Pagarme → C6 → Inter → Asaas
 ---
 
 ## 8️⃣ INTEGRAÇÕES EXTERNAS
@@ -299,12 +299,13 @@ C
 Quais status padrão em português?
 
 ```
-✓ PENDENTE          → Aguardando processamento
-✓ PAGAMENTO_RECEBIDO → Pago/Confirmado
-✓ PAGAMENTO_VENCIDO  → Vencido
-✓ PAGAMENTO_CANCELADO → Cancelado
-✓ PAGAMENTO_RECUSADO → Recusado/Falha
-✓ REEMBOLSADO        → Reembolsado
+✓ EM_PROCESSAMENTO          → Em processamento
+✓ PAGAMENTO_RECEBIDO        → Pago/Confirmado
+✓ PAGAMENTO_VENCIDO         → Vencido
+✓ PAGAMENTO_CANCELADO       → Cancelado
+✓ FALHA                     → Falha
+✓ REEMBOLSADO               → Reembolsado
+✓ REEMBOLSADO_PARCIALMENTE  → Reembolsado parcialmente
 ```
 
 Adiciona mais algum?
@@ -344,16 +345,16 @@ Qual horizonte tem?
 | Questão | Opção Sugerida | Razão |
 |---------|---|---|
 | **1. Constructor** | A (Factory) | Máxima agnose |
-| **2. Response** | A (DTO Props) | Simples, claro |
-| **3. Versionamento** | B (V1.1) | Compatibilidade |
+| **2. Response** | B (DTO Getters) | Encapsulamento e consistência |
+| **3. Versionamento** | A (V2) | Evolução com contrato novo |
 | **4. Security** | D (Combinado) | Mais seguro |
 | **5. App Testes** | A (CI4) | Mais completo |
 | **6. Database** | A (SQLite) | Dev local |
-| **7. Prioridade Banco** | Pagarme → Asaas → C6 → Inter | Do simples para complexo |
+| **7. Prioridade Banco** | Pagarme → C6 → Inter → Asaas | Ordem definida para rollout |
 | **8. Integrações** | Nenhuma | Manter simples |
 | **9. Erros** | C (Híbrido) | Flexível |
-| **10. Status Codes** | Os listados | Suficientes |
-| **11. Extras** | Webhook Simulator | Facilita testes |
+| **10. Status Codes** | Com ajustes de Em Processamento, Falha e Reembolso Parcial | Cobertura completa |
+| **11. Extras** | Reprocessamento de transação recusada | Evita criar nova transação |
 | **12. Timeline** | MÉDIA (10-15 dias) | Equilíbrio |
 
 ---

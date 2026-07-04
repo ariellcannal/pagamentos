@@ -82,7 +82,7 @@ Não há `PagamentoResponse` ou similar que garanta os mesmos campos em portugu�
 
 ## 🏗️ ARQUITETURA PROPOSTA
 
-### 1. **Padrão de Instanciação (RESOLVER INCONSISTÊNCIA)**
+### 1. **Padrão de Instanciação (RESOLVER INCONSISTÊNCIA)** OK
 
 ```php
 // Proposta unificada
@@ -119,10 +119,9 @@ $banco = new Inter(
     // Se Inter usar certificado: adicionar após logger
 );
 ```
-GOSTO MUITO DESSA ESTRUTURA
 **Benefício**: Mesmo padrão para todos. Trocar de banco = trocar só a classe.
 
-### 2. **Estrutura de Resposta Padronizada**
+### 2. **Estrutura de Resposta Padronizada** OK
 
 Criar novo arquivo: `src/DTO/PagamentoResponse.php`
 
@@ -155,8 +154,9 @@ class PagamentoResponse {
     public ?string $erroCodigo;
 }
 ```
-Essa classe deve ter também os atributos com o objeto Pedido, Cliente e Transação
-### 3. **Factory Pattern para Instanciação**
+Essa classe deve ter também os atributos com o objeto Pedido, Cliente e Transação, com acesso por getters/setters.
+
+### 3. **Factory Pattern para Instanciação** OK
 
 Criar: `src/Factory/BancoFactory.php`
 
@@ -173,9 +173,8 @@ class BancoFactory {
     }
 }
 ```
-Não quero esse Factory. 
 
-### 4. **Mapper Pattern para Respostas**
+### 4. **Mapper Pattern para Respostas** OK
 
 Criar: `src/Mappers/BancoMapper.php` (abstrato)
 E implementações: `src/Mappers/PagarmeMapper.php`, etc.
@@ -189,7 +188,7 @@ abstract class BancoMapper {
 }
 ```
 
-### 5. **Estructura de Credenciais Padronizadas**
+### 5. **Estructura de Credenciais Padronizadas** OK - usar classe dedicada de credenciais.
 
 Criar: `src/DTO/CredenciaisAutenticacao.php`
 
@@ -209,9 +208,8 @@ class CredenciaisAutenticacao {
     public static function fromEnv(string $banco): self
 }
 ```
-Naõ precisa de uma classe de credenciais. Elas podem ser passadas no contrutor da Classe d o Banco.
 
-### 6. **Melhorias na Interface PagamentosInterface**
+### 6. **Melhorias na Interface PagamentosInterface** OK - Se algum banco não suportar alguma dessas funções retornar throw new CANNALPagamentosException
 
 ```php
 interface PagamentosInterface {
@@ -242,12 +240,12 @@ interface PagamentosInterface {
     public function obterNome(): string; // Rename: getNome
 }
 ```
-Se algum banco não suportar alguma dessas funções retornar throw new CANNALPagamentosException
+
 ---
 
 ## 🎣 SUGESTÕES PARA WEBHOOKS
 
-### Abordagem Proposta: **Webhook Genérico com Router**
+### Abordagem Proposta: **Webhook Genérico com Router** Pretendo que o consumidor da lib chame $cannalPagamentos->webhook(array $payload, array $headers): PagamentoResponse; O método identifica o banco e retorna PagamentoResponse;
 
 ```
 POST /webhooks/processar
@@ -293,8 +291,6 @@ Body: {
    X-Webhook-Token: token_aqui
    X-Webhook-Timestamp: 1234567890
    ```
-Pretendo que o consumidor da lib chame $cannalPagamentos->webhook(array $payload, array $headers): PagamentoResponse;
-O método identifica o banco e retorna PagamentoResponse;
 ---
 
 ## 🧪 PROPOSTA: APLICAÇÃO DE TESTES (CI4)
@@ -398,13 +394,13 @@ tests/
 5. **Features Especiais**
    - Sincronização automática: Clica em "Recarregar" e consulta status na API
    - Comparador de versões: Mostra o que foi retornado vs o que era esperado
-   - Export em CSV/JSON - Não precisa
+   - Export em CSV/JSON
 
 ---
 
 ## 📋 MAPEAMENTO DE RESPOSTAS
 
-### Exemplo: Status em Português
+### Exemplo: Status em Português Busque nos manuais das APIs dos bancos, pois estão faltando status.
 
 | Banco | Status Original | Mapeado para | Português |
 |-------|---|---|---|
@@ -472,19 +468,19 @@ class PagarmeMapper extends BancoMapper {
 
 ### Decisões a Tomar
 
-- [ ] Usar Factory Pattern ou IoC Container?
-- [ ] Única interface ou interface + classe abstrata?
-- [ ] Suportar múltiplos sandbox/produção no mesmo objeto?
-- [ ] Versionamento de API (V1, V2)?
-- [ ] Banco de dados SQLite ou externo na app testes?
-- [ ] CI4 ou Laravel para app testes?
+- [ ] Usar Factory Pattern ou IoC Container? NÃO
+- [ ] Única interface ou interface + classe abstrata? interface + classe abstrata
+- [ ] Suportar múltiplos sandbox/produção no mesmo objeto? NÃO
+- [ ] Versionamento de API (V1, V2)? V2
+- [ ] Banco de dados SQLite ou externo na app testes? SQLite
+- [ ] CI4 ou Laravel para app testes? CI4
 
 ### Validações Necessárias
 
-- [ ] Pagarme: Quais parâmetros são obrigatórios?
-- [ ] Asaas: Como funciona certificado?
-- [ ] C6: Precisa OAuth2 ou chave simples?
-- [ ] Inter: Suporta PIX direto ou precisa de Boleto?
+- [ ] Pagarme: Quais parâmetros são obrigatórios? Busque no manual do banco
+- [ ] Asaas: Como funciona certificado? Busque no manual do banco
+- [ ] C6: Precisa OAuth2 ou chave simples? Busque no manual do banco
+- [ ] Inter: Suporta PIX direto ou precisa de Boleto? Busque no manual do banco
 
 ### Setup Técnico
 

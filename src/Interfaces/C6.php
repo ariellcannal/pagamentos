@@ -1,255 +1,237 @@
 <?php
 
+declare(strict_types=1);
+
 namespace CANNALPagamentos\Interfaces;
 
+use CANNALPagamentos\Entities\Cartao;
 use CANNALPagamentos\Entities\Cliente;
 use CANNALPagamentos\Entities\Pedido;
+use CANNALPagamentos\Entities\Recebivel;
 use CANNALPagamentos\Entities\Transacao;
+use CANNALPagamentos\Exceptions\CANNALPagamentosException;
+use CANNALPagamentos\PagamentosInterface;
 use Psr\Log\LoggerInterface;
-use GuzzleHttp\Client;
-use Exception;
+use Psr\Log\NullLogger;
+use Throwable;
 
 class C6 implements PagamentosInterface
 {
-    private Client $httpClient;
+    private object $httpClient;
     private LoggerInterface $logger;
-    private string $baseUrl;
-    private string $clientId;
+    private string $key;
     private string $clientSecret;
+    private string $nome;
 
-    /**
-     * Construtor que recebe as credenciais para inicializar o cliente HTTP.
-     *
-     * @param LoggerInterface $logger
-     * @param string $baseUrl URL base da API do C6 (ex: https://api.c6bank.com.br/v1)
-     * @param string $clientId Client ID
-     * @param string $clientSecret Client Secret
-     */
     public function __construct(
-        LoggerInterface $logger,
-        string $baseUrl,
-        string $clientId,
-        string $clientSecret
+        string $key,
+        ?string $nome = null,
+        ?LoggerInterface $logger = null,
+        ?string $baseUrl = null,
+        ?string $clientSecret = null,
+        bool $sandbox = true
     ) {
-        $this->logger = $logger;
-        $this->baseUrl = $baseUrl;
-        $this->clientId = $clientId;
-        $this->clientSecret = $clientSecret;
-        
-        // Inicialização do cliente Guzzle para chamadas HTTP
-        $this->httpClient = new Client([
-            'base_uri' => $this->baseUrl,
+        $this->key = $key;
+        $this->clientSecret = $clientSecret ?? '';
+        $this->nome = $nome ?: 'C6';
+        $this->logger = $logger ?? new NullLogger();
+
+        $baseUri = $baseUrl ?: ($sandbox
+            ? 'https://sandbox.api.c6bank.com.br/v1/'
+            : 'https://api.c6bank.com.br/v1/');
+
+        if (!class_exists('GuzzleHttp\\Client')) {
+            throw new CANNALPagamentosException('Dependencia guzzlehttp/guzzle nao encontrada.');
+        }
+
+        $clientClass = 'GuzzleHttp\\Client';
+        $this->httpClient = new $clientClass([
+            'base_uri' => $baseUri,
             'headers' => [
                 'Content-Type' => 'application/json',
-                // A autenticação real do C6 é complexa (OAuth2 + Certificado)
-                // Aqui, apenas simulamos a injeção das credenciais.
+                'Accept' => 'application/json',
+                'X-Client-Id' => $this->key,
+                'X-Client-Secret' => $this->clientSecret,
             ],
-            'verify' => false // Desabilitar verificação SSL para ambiente de sandbox
+            'verify' => false,
         ]);
     }
 
-    // Métodos de PagamentosInterface (Implementação real com Guzzle)
-
-    public function creditCard(Cliente &$cli, Pedido $pedido, $cartao, ?string $token = null): Transacao
+    public function getNome(): ?string
     {
-        // Lógica de Adapter: Traduzir Entidades para o formato do C6
-        $requestData = [
-            'amount' => $pedido->getValorTotal(),
+        return $this->nome;
+    }
+
+    public function creditCard(Cliente &$cli, Pedido $pedido, Cartao|string $cartao): Transacao
+    {
+        $payload = [
             'payment_method' => 'credit_card',
-            'partner_id' => $pedido->getId(),
+            'amount' => $pedido->getValor(),
+            'external_id' => $pedido->getId(),
             'customer' => [
-                'document' => $cli->getCpfCnpj(),
-                // ...
+                'name' => $cli->getNome(),
+                'document' => $cli->getCpf(),
+                'email' => $cli->getEmail(),
             ],
         ];
 
-        try {
-            $response = $this->httpClient->post('charges', ['json' => $requestData]);
-            $responseData = json_decode($response->getBody()->getContents(), true);
-            
-            $transacao = new Transacao();
-            $transacao->setOperadoraID($responseData['external_id']);
-            $transacao->setOperadoraStatus($responseData['status']);
-            $transacao->setValorBruto($responseData['amount']);
-            $transacao->setOperadoraCodigo($responseData['partner_id']);
-            $transacao->setOperadora('C6');
-            
-            return $transacao;
-        } catch (Exception $e) {
-            $this->logger->error("Erro ao criar charge (C6): " . $e->getMessage());
-            throw $e;
+        if ($cartao instanceof Cartao) {
+            $payload['card'] = [
+                'holder_name' => $cartao->getNome(),
+                'number' => preg_replace('/\D+/', '', $cartao->getNumero()),
+                'exp_month' => $cartao->getVencimentoMes(),
+                'exp_year' => $cartao->getVencimentoAno(),
+                'cvv' => $cartao->getCodigo(),
+            ];
+        } else {
+            $payload['card_token'] = $cartao;
         }
+
+        $response = $this->request('POST', 'charges', $payload);
+
+        return $this->mapTransacao($response, 'cartao');
     }
 
-    public function pix(Cliente &$cli, Pedido $pedido, $cartao, ?string $token = null): Transacao
+    public function pix(Cliente &$cli, Pedido $pedido): Transacao
     {
-        // Lógica de Adapter para Pix (similar ao creditCard, mas com Pix)
-        $requestData = [
-            'amount' => $pedido->getValorTotal(),
+        $payload = [
             'payment_method' => 'pix',
-            'partner_id' => $pedido->getId(),
+            'amount' => $pedido->getValor(),
+            'external_id' => $pedido->getId(),
             'customer' => [
-                'document' => $cli->getCpfCnpj(),
+                'name' => $cli->getNome(),
+                'document' => $cli->getCpf(),
+                'email' => $cli->getEmail(),
             ],
         ];
 
-        try {
-            $response = $this->httpClient->post('charges', ['json' => $requestData]);
-            $responseData = json_decode($response->getBody()->getContents(), true);
-            
-            $transacao = new Transacao();
-            $transacao->setOperadoraID($responseData['external_id']);
-            $transacao->setOperadoraStatus($responseData['status']);
-            $transacao->setValorBruto($responseData['amount']);
-            $transacao->setPixQrCode($responseData['pix_code'] ?? null);
-            $transacao->setOperadoraCodigo($responseData['partner_id']);
-            $transacao->setOperadora('C6');
-            
-            return $transacao;
-        } catch (Exception $e) {
-            $this->logger->error("Erro ao emitir Pix (C6): " . $e->getMessage());
-            throw $e;
-        }
-    }
+        $response = $this->request('POST', 'charges', $payload);
+        $transacao = $this->mapTransacao($response, 'pix');
 
-    public function refund(string $charge_id, float $amount): Transacao
-    {
-        try {
-            $this->httpClient->post("charges/{$charge_id}/refund", ['json' => ['amount' => $amount]]);
-            
-            $transacao = new Transacao();
-            $transacao->setOperadoraID($charge_id);
-            $transacao->setValorCancelado($amount);
-            $transacao->setOperadoraStatus('REFUNDED');
-            $transacao->setDataCancelamento(date('Y-m-d H:i:s'));
-            return $transacao;
-        } catch (Exception $e) {
-            $this->logger->error("Erro ao realizar estorno (C6): " . $e->getMessage());
-            throw $e;
+        if (isset($response['pix_code'])) {
+            $transacao->setPixQrCode((string) $response['pix_code']);
         }
-    }
 
-    public function saveCard(Cliente &$cli, string $cartao): string
-    {
-        // Implementação simulada de tokenização com chamada HTTP
-        $requestData = [
-            'card_data' => $cartao,
-            'customer_id' => $cli->getId(),
-        ];
+        if (isset($response['pix_qrcode_url'])) {
+            $transacao->setPixQrCodeUrl((string) $response['pix_qrcode_url']);
+        }
 
-        try {
-            // Endpoint fictício para tokenização
-            $response = $this->httpClient->post('tokenization/cards', ['json' => $requestData]);
-            $responseData = json_decode($response->getBody()->getContents(), true);
-            
-            $token = $responseData['card_token'] ?? 'tok_c6_' . substr(md5($cartao), 0, 16);
-            return $token;
-        } catch (Exception $e) {
-            $this->logger->error("Erro ao salvar cartão (C6): " . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    public function getCards(Cliente $cli): array
-    {
-        try {
-            // Endpoint fictício para consulta de cartões
-            $response = $this->httpClient->get("customers/{$cli->getId()}/cards");
-            $responseData = json_decode($response->getBody()->getContents(), true);
-            
-            // Retorna um array de tokens de cartão
-            return $responseData['cards'] ?? [];
-        } catch (Exception $e) {
-            $this->logger->error("Erro ao consultar cartões (C6): " . $e->getMessage());
-            throw $e;
-        }
-    }
-
-    public function updateCustumer(Cliente $cli): Cliente
-    {
-        // Lógica de atualização de cliente
-        try {
-            $this->httpClient->put("customers/{$cli->getId()}", ['json' => $cli->toArray()]);
-            return $cli;
-        } catch (Exception $e) {
-            $this->logger->error("Erro ao atualizar cliente (C6): " . $e->getMessage());
-            throw $e;
-        }
-    }
-    
-    public function getReceivable(string $id): Transacao
-    {
-        throw new Exception("Consulta de recebível não é uma funcionalidade exposta pela PagamentosInterface no C6.");
-    }
-    public function getReceivables(array $params): array
-    {
-        throw new Exception("Consulta de recebíveis não é uma funcionalidade exposta pela PagamentosInterface no C6.");
-    }
-    public function getCharge(string $id): Transacao
-    {
-        try {
-            $response = $this->httpClient->get("charges/{$id}");
-            $responseData = json_decode($response->getBody()->getContents(), true);
-            
-            $transacao = new Transacao();
-            $transacao->setOperadoraID($responseData['external_id']);
-            $transacao->setOperadoraStatus($responseData['status']);
-            $transacao->setValorBruto($responseData['amount']);
-            $transacao->setOperadora('C6');
-            
-            return $transacao;
-        } catch (Exception $e) {
-            $this->logger->error("Erro ao consultar charge (C6): " . $e->getMessage());
-            throw $e;
-        }
-    }
-    public function cancelCharge(string $charge_id): Transacao
-    {
-        try {
-            $this->httpClient->post("charges/{$charge_id}/cancel");
-            
-            $transacao = new Transacao();
-            $transacao->setOperadoraID($charge_id);
-            $transacao->setOperadoraStatus('CANCELLED');
-            $transacao->setDataCancelamento(date('Y-m-d H:i:s'));
-            return $transacao;
-        } catch (Exception $e) {
-            $this->logger->error("Erro ao cancelar charge (C6): " . $e->getMessage());
-            throw $e;
-        }
+        return $transacao;
     }
 
     public function boleto(Cliente &$cli, Pedido $pedido): Transacao
     {
-        // Lógica de Adapter para Boleto
-        $requestData = [
-            'amount' => $pedido->getValorTotal(),
+        $payload = [
             'payment_method' => 'boleto',
-            'partner_id' => $pedido->getId(),
+            'amount' => $pedido->getValor(),
+            'external_id' => $pedido->getId(),
             'customer' => [
-                'document' => $cli->getCpfCnpj(),
+                'name' => $cli->getNome(),
+                'document' => $cli->getCpf(),
+                'email' => $cli->getEmail(),
             ],
-            // Outros dados de boleto, como vencimento, etc.
         ];
 
-        try {
-            $response = $this->httpClient->post('charges', ['json' => $requestData]);
-            $responseData = json_decode($response->getBody()->getContents(), true);
-            
-            $transacao = new Transacao();
-            $transacao->setOperadoraID($responseData['external_id']);
-            $transacao->setOperadoraStatus($responseData['status']);
-            $transacao->setValorBruto($responseData['amount']);
-            $transacao->setOperadoraCodigo($responseData['partner_id']);
-            $transacao->setOperadora('C6');
-            
-            // Dados específicos de boleto
-            $transacao->setDataExpiracao($responseData['due_date'] ?? null);
-            
-            return $transacao;
-        } catch (Exception $e) {
-            $this->logger->error("Erro ao emitir Boleto (C6): " . $e->getMessage());
-            throw $e;
+        $response = $this->request('POST', 'charges', $payload);
+        return $this->mapTransacao($response, 'boleto');
+    }
+
+    public function refund(string $charge_id, int $amount): Transacao
+    {
+        $response = $this->request('POST', 'charges/' . $charge_id . '/refund', ['amount' => $amount]);
+
+        $transacao = $this->mapTransacao($response, null);
+        $transacao->setValorCancelado((float) $amount);
+
+        return $transacao;
+    }
+
+    public function saveCard(Cliente &$cli, Cartao $cartao): Cartao
+    {
+        $payload = [
+            'customer_external_id' => (string) $cli->getId(),
+            'holder_name' => $cartao->getNome(),
+            'number' => preg_replace('/\D+/', '', $cartao->getNumero()),
+            'exp_month' => $cartao->getVencimentoMes(),
+            'exp_year' => $cartao->getVencimentoAno(),
+            'cvv' => $cartao->getCodigo(),
+        ];
+
+        $response = $this->request('POST', 'cards/tokenize', $payload);
+        if (isset($response['id'])) {
+            $cartao->setId((string) $response['id']);
         }
+
+        return $cartao;
+    }
+
+    public function getCards(Cliente &$cli): array
+    {
+        $response = $this->request('GET', 'customers/' . $cli->getId() . '/cards');
+        return $response['data'] ?? [];
+    }
+
+    public function updateCustumer(Cliente &$alu): Cliente
+    {
+        return $alu;
+    }
+
+    public function getReceivable(int $payable_id): ?Recebivel
+    {
+        throw new CANNALPagamentosException('Funcao getReceivable nao suportada no gateway C6.');
+    }
+
+    public function getReceivables(string $charge_id = null, int $parcela_id = null, string $status = null, int $days = null): ?array
+    {
+        throw new CANNALPagamentosException('Funcao getReceivables nao suportada no gateway C6.');
+    }
+
+    public function getCharge(string $charge_id): ?Transacao
+    {
+        $response = $this->request('GET', 'charges/' . $charge_id);
+        return $this->mapTransacao($response, null);
+    }
+
+    public function cancelCharge(string $charge_id)
+    {
+        $response = $this->request('POST', 'charges/' . $charge_id . '/cancel');
+        return $this->mapTransacao($response, null);
+    }
+
+    private function request(string $method, string $uri, ?array $payload = null): array
+    {
+        try {
+            $options = [];
+            if ($payload !== null) {
+                $options['json'] = $payload;
+            }
+
+            $response = $this->httpClient->request($method, $uri, $options);
+            $content = (string) $response->getBody();
+            $decoded = json_decode($content, true);
+
+            return is_array($decoded) ? $decoded : [];
+        } catch (Throwable $e) {
+            $this->logger->error('C6 request error: ' . $e->getMessage());
+            throw new CANNALPagamentosException('Falha na comunicacao com C6: ' . $e->getMessage(), 0, $e);
+        }
+    }
+
+    private function mapTransacao(array $response, ?string $tipo): Transacao
+    {
+        $transacao = new Transacao();
+        $transacao
+            ->setTipo($tipo)
+            ->setForma($tipo)
+            ->setOperadora('C6')
+            ->setOperadoraID((string) ($response['id'] ?? $response['external_id'] ?? ''))
+            ->setOperadoraStatus((string) ($response['status'] ?? 'PENDING'))
+            ->setOperadoraResposta(json_encode($response))
+            ->setOperadoraCodigo((string) ($response['external_id'] ?? ''))
+            ->setValorBruto(isset($response['amount']) ? (float) $response['amount'] : null)
+            ->setDataTransacao((string) ($response['created_at'] ?? date('Y-m-d H:i:s')))
+            ->setConfirmada(in_array(strtoupper((string) ($response['status'] ?? '')), ['PAID', 'APPROVED', 'RECEIVED'], true));
+
+        return $transacao;
     }
 }

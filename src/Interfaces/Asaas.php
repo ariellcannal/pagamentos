@@ -49,7 +49,8 @@ class Asaas implements PagamentosInterface
         }
 
         // Define a URL base baseada no ambiente
-        $this->baseUrl = defined('ASAAS_SANDBOX') && ASAAS_SANDBOX 
+        $sandbox = filter_var(getenv('ASAAS_SANDBOX') ?: 'true', FILTER_VALIDATE_BOOL);
+        $this->baseUrl = $sandbox
             ? 'https://api-sandbox.asaas.com/v3'
             : 'https://api.asaas.com/v3';
     }
@@ -96,7 +97,8 @@ class Asaas implements PagamentosInterface
             }
 
             // Desabilita verificação SSL em desenvolvimento
-            if (defined('ENVIRONMENT') && ENVIRONMENT === 'development') {
+            $environment = getenv('ENVIRONMENT') ?: 'production';
+            if ($environment === 'development') {
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
                 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
             }
@@ -188,8 +190,8 @@ class Asaas implements PagamentosInterface
             'customerId' => $customerId,
             'billingType' => $billingType,
             'value' => $pedido->getValor(),
-            'description' => $pedido->getDescricao(),
-            'dueDate' => $pedido->getDataVencimento() ?? date('Y-m-d', strtotime('+7 days')),
+            'description' => $pedido->getDescricaoFatura(),
+            'dueDate' => date('Y-m-d', strtotime('+7 days')),
         ];
 
         if ($creditCard) {
