@@ -4,18 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sandbox Pagamentos</title>
-  <style>
-    body { font-family: Segoe UI, sans-serif; margin: 24px; background: #f7f9fb; color: #1e293b; }
-    .card { background: #fff; border: 1px solid #d9e2ec; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-    label { display: block; font-size: 12px; margin-bottom: 4px; color: #475569; }
-    input, select, button, textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
-    button { cursor: pointer; background: #0f766e; color: #fff; border: none; }
-    button:hover { background: #115e59; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th, td { border-bottom: 1px solid #e2e8f0; text-align: left; padding: 8px; }
-    pre { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 8px; overflow: auto; }
-  </style>
+  <link rel="stylesheet" href="/assets/dashboard.css">
 </head>
 <body>
   <h1>Sandbox de Pagamentos</h1>
@@ -89,33 +78,6 @@
     </table>
   </div>
 
-  <script>
-    const saida = document.getElementById('saida');
-
-    document.getElementById('form-criar').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const form = new FormData(e.target);
-      const payload = Object.fromEntries(form.entries());
-      const res = await fetch('/transacoes/criar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const json = await res.json();
-      saida.textContent = JSON.stringify(json, null, 2);
-    });
-
-    document.getElementById('form-webhook').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const payload = JSON.parse(new FormData(e.target).get('payload'));
-      const res = await fetch('/webhook/receber', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const json = await res.json();
-      saida.textContent = JSON.stringify(json, null, 2);
-    });
-  </script>
+  <script src="/assets/dashboard.js"></script>
 </body>
 </html>

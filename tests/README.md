@@ -17,6 +17,8 @@ Este diretorio contem uma aplicacao de sandbox funcional para validar transacoes
 - app/Support/Bootstrap.php
 - app/Support/Storage.php
 - app/Views/dashboard.php
+- public/assets/dashboard.css
+- public/assets/dashboard.js
 - public/index.php
 - database/schema.sql
 - .env.example
@@ -25,6 +27,7 @@ Este diretorio contem uma aplicacao de sandbox funcional para validar transacoes
 
 1. Copie `tests/.env.example` para `tests/.env`.
 2. Preencha as credenciais sandbox necessarias.
+   - O banco SQLite padrao sera criado em `tests/writable/sandbox.sqlite`.
 3. Inicie o servidor web na pasta de testes:
    - `php -S localhost:8080 -t tests/public`
 4. Acesse `http://localhost:8080`.

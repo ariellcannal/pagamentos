@@ -16,7 +16,7 @@ final class Storage
             return;
         }
 
-        $dbPath = (string) (getenv('DB_PATH') ?: './database/sandbox.sqlite');
+        $dbPath = (string) (getenv('DB_PATH') ?: './writable/sandbox.sqlite');
         if (!preg_match('/^[a-zA-Z]:\\\\|^\//', $dbPath)) {
             $dbPath = $testsRoot . DIRECTORY_SEPARATOR . str_replace(['/', '\\\\'], DIRECTORY_SEPARATOR, $dbPath);
         }

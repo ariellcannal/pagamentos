@@ -1,0 +1,10 @@
+body { font-family: Segoe UI, sans-serif; margin: 24px; background: #f7f9fb; color: #1e293b; }
+.card { background: #fff; border: 1px solid #d9e2ec; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+label { display: block; font-size: 12px; margin-bottom: 4px; color: #475569; }
+input, select, button, textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
+button { cursor: pointer; background: #0f766e; color: #fff; border: none; }
+button:hover { background: #115e59; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th, td { border-bottom: 1px solid #e2e8f0; text-align: left; padding: 8px; }
+pre { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 8px; overflow: auto; }
